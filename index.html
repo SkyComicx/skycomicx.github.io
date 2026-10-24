@@ -5,24 +5,37 @@
 <meta name="description" content="SkyComic: manga, manhwa aur webtoon padhne ki free website.">
 <link rel="canonical" href="https://skycomicx.github.io/">
 <style>
-:root{--bg:#f5f5f8;--c:#fff;--tx:#16181d;--m:#6b7280;--a:#e8472a;--b:#e2e4ea}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1014;--c:#181b22;--tx:#eceef2;--m:#8b91a0;--a:#ff6b4a;--b:#272b35}}
+:root{--bg:#14121c;--c:#1c1928;--tx:#f1eef8;--m:#9a94ad;--a:#8e3fe0;--b:#2b2740}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,sans-serif;padding-top:env(safe-area-inset-top,0)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,sans-serif}
 [hidden]{display:none!important}
-header{position:sticky;top:0;z-index:4;display:flex;gap:8px;align-items:center;padding:10px 12px;background:var(--c);border-bottom:1px solid var(--b)}
-.logo{font-weight:800;font-size:18px;color:var(--tx);text-decoration:none}.logo span{color:var(--a)}
-header input{flex:1;min-width:0;margin:0}
+header{position:sticky;top:0;z-index:4;display:flex;gap:10px;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:var(--a)}
+.logo{font-weight:800;font-size:19px;color:#fff;text-decoration:none}.logo span{color:#ffd24a}
+header input{flex:1;min-width:0;margin:0;background:rgba(0,0,0,.25);border-color:transparent;color:#fff}
+header input::placeholder{color:#e5d8fa}
 main{max-width:1000px;margin:auto;padding:14px 12px 40px}
-h1{font-size:22px;margin:0 0 6px}h2{font-size:18px;margin:20px 0 10px}
+h1{font-size:22px;margin:0 0 6px}h2{font-size:19px;margin:22px 0 10px}
 input,select,textarea{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--b);border-radius:10px;padding:9px 11px;margin:4px 0 10px}
 .btn{display:inline-block;font:inherit;color:var(--tx);background:var(--c);border:1px solid var(--b);border-radius:10px;padding:8px 12px;text-decoration:none;cursor:pointer;margin:2px 0}
 .btn.p{background:var(--a);border-color:var(--a);color:#fff;font-weight:600}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:12px}
 .card{color:var(--tx);text-decoration:none}
 .card img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;display:block;background:var(--b)}
-.card b{display:block;font-size:13.5px;margin-top:6px}
+.card b{display:block;font-size:13.5px;margin-top:6px;line-height:1.25}
 small,.m{color:var(--m);font-size:13px}
+.fs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+.fc{position:relative;flex:0 0 78%;max-width:340px;aspect-ratio:2/3;border-radius:14px;overflow:hidden;scroll-snap-align:center;color:#fff;text-decoration:none;background:var(--b)}
+.fc img{width:100%;height:100%;object-fit:cover;display:block}
+.fc div{position:absolute;left:0;right:0;bottom:0;padding:44px 12px 12px;background:linear-gradient(transparent,rgba(0,0,0,.88))}
+.fc b{display:block;font-size:17px}.fc small{color:#ddd}
+.hd{display:flex;justify-content:space-between;align-items:center}
+.hs{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}.hs .card{flex:0 0 132px}
+.lu{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--b)}
+.lu img{width:90px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:var(--b);display:block}
+.lu>div{flex:1;min-width:0}
+.tt{display:block;font-weight:700;font-size:16px;color:var(--tx);text-decoration:none;margin-bottom:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lr{display:flex;justify-content:space-between;padding:4px 0;color:var(--tx);text-decoration:none}
+.nw{color:#f5b800;font-weight:600}
 .sd{display:flex;gap:14px}.sd img{width:130px;aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:var(--b)}
 .chip{display:inline-block;padding:4px 10px;border-radius:99px;border:1px solid var(--b);background:var(--c);font-size:13px;margin:0 4px 4px 0}
 .ch{display:flex;justify-content:space-between;padding:11px 12px;background:var(--c);border:1px solid var(--b);border-radius:10px;margin-bottom:7px;color:var(--tx);text-decoration:none}
@@ -35,16 +48,14 @@ footer{text-align:center;color:var(--m);font-size:12px;padding:20px 12px}
 .bar span{flex:1;text-align:center;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .bb{bottom:0;justify-content:space-between;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
 .bb span{font-size:13px;color:#bbb}
-.rd.hid .bar{transform:translateY(-100%)}
-.rd.hid .bb{transform:translateY(100%)}
-.rd .btn{background:#222;border-color:#333;color:#fff}
-.rd .btn.p{background:var(--a);border-color:var(--a)}
+.rd.hid .bar{transform:translateY(-100%)}.rd.hid .bb{transform:translateY(100%)}
+.rd .btn{background:#222;border-color:#333;color:#fff}.rd .btn.p{background:var(--a);border-color:var(--a)}
 .rd .off{opacity:.35;pointer-events:none}
 .pg{display:block;width:100%;max-width:800px;margin:0 auto;min-height:200px}
 .nav{text-align:center;padding:30px 10px 90px}
 </style></head><body>
 <header><a class="logo" href="#">Sky<span>Comic</span></a>
-<input id="sq" placeholder="Search manga, manhwa..." oninput="srch(this.value)"></header>
+<input id="sq" placeholder="Search comics..." oninput="srch(this.value)"></header>
 <main id="app"></main>
 <footer>SkyComic hosts only content its uploaders have rights to. Takedown requests: contact the site owner.</footer>
 <div class="rd" id="rd" hidden></div>
@@ -52,7 +63,8 @@ footer{text-align:center;color:var(--m);font-size:12px;padding:20px 12px}
 const $=s=>document.querySelector(s),E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const O='SkyComicx',R='skycomicx.github.io';
 let D=[],Q='',TK='',ly=0;
-const pg=(s,c,p)=>`manga/${s.id}/c${c+1}/${String(p+1).padStart(3,'0')}.jpg`;
+const pg=(s,c,p)=>`manga/${s.id}/c${c+1}/${String(p+1).padStart(3,'0')}.jpg`,cv=s=>`manga/${s.id}/c1/001.jpg`;
+const ago=t=>{const m=(Date.now()-t)/6e4;return m<1?'just now':m<60?(m|0)+'m ago':m<1440?(m/60|0)+'h ago':m<10080?(m/1440|0)+'d ago':(m/10080|0)+'w ago'};
 async function load(){try{const r=await fetch('data.json?t='+Date.now());D=r.ok?await r.json():[]}catch(e){D=[]}route()}
 addEventListener('hashchange',route);
 const rd=$('#rd');
@@ -63,14 +75,20 @@ rd.addEventListener('click',e=>{if(e.target.classList.contains('pg'))rd.classLis
 function route(){const h=location.hash.slice(1).split('/'),r=h[0]==='r';
 rd.hidden=!r;document.body.style.overflow=r?'hidden':'';
 if(!r)window.scrollTo(0,0);
-if(h[0]==='s')ser(h[1]);else if(r)rdr(h[1],+h[2]);else if(h[0]==='admin')adm();else home()}
-function srch(v){Q=v;if(location.hash.length>1)location.hash='';else home()}
+if(h[0]==='s')ser(h[1]);else if(r)rdr(h[1],+h[2]);else if(h[0]==='admin')adm();else if(h[0]==='all')all();else home()}
+function srch(v){Q=v;if(location.hash!=='#all')location.hash='all';else all()}
 function home(){document.title='SkyComic – Free Manga, Manhwa & Webtoon Reader';
-const q=Q.toLowerCase(),a=D.filter(s=>(s.title+' '+s.genres.join(' ')).toLowerCase().includes(q)).sort((x,y)=>y.upd-x.upd);
-$('#app').innerHTML=a.length?`<h2>Latest Updates</h2><div class="grid">${a.map(s=>`<a class="card" href="#s/${s.id}"><img loading="lazy" src="manga/${s.id}/c1/001.jpg" alt="${E(s.title)}"><b>${E(s.title)}</b><small>${s.type} · ${s.chapters.length} ch</small></a>`).join('')}</div>`:'<div class="empty">Abhi koi series nahi hai.</div>'}
+const a=[...D].sort((x,y)=>y.upd-x.upd);
+if(!a.length){$('#app').innerHTML='<div class="empty">Abhi koi series nahi hai.</div>';return}
+$('#app').innerHTML=`<div class="fs">${a.slice(0,6).map(s=>`<a class="fc" href="#s/${s.id}"><img src="${cv(s)}" alt=""><div><b>${E(s.title)}</b><small>${E(s.genres.slice(0,3).join(' · '))}</small></div></a>`).join('')}</div>
+<div class="hd"><h2>Trending Comics</h2><a class="btn p" href="#all">All Comics</a></div>
+<div class="hs">${D.map(s=>`<a class="card" href="#s/${s.id}"><img loading="lazy" src="${cv(s)}" alt=""><b>${E(s.title)}</b></a>`).join('')}</div>
+<h2>Latest Updates</h2>${a.map(s=>`<div class="lu"><a href="#s/${s.id}"><img loading="lazy" src="${cv(s)}" alt=""></a><div><a class="tt" href="#s/${s.id}">${E(s.title)}</a>${[...s.chapters.keys()].slice(-3).reverse().map(i=>`<a class="lr" href="#r/${s.id}/${i}"><span class="${i==s.chapters.length-1?'nw':''}">${E(s.chapters[i].name)}</span><span class="m">${ago(s.chapters[i].t||s.upd)}</span></a>`).join('')}</div></div>`).join('')}`}
+function all(){document.title='All Comics – SkyComic';const q=Q.toLowerCase(),a=D.filter(s=>(s.title+' '+s.genres.join(' ')).toLowerCase().includes(q)).sort((x,y)=>y.upd-x.upd);
+$('#app').innerHTML='<h2>All Comics</h2>'+(a.length?`<div class="grid">${a.map(s=>`<a class="card" href="#s/${s.id}"><img loading="lazy" src="${cv(s)}" alt=""><b>${E(s.title)}</b><small>${s.type} · ${s.chapters.length} ch</small></a>`).join('')}</div>`:'<div class="empty">Kuch nahi mila.</div>')}
 function ser(id){const s=D.find(x=>x.id===id);if(!s){home();return}
 document.title=s.title+' – SkyComic';
-$('#app').innerHTML=`<div class="sd"><img src="manga/${s.id}/c1/001.jpg" alt=""><div><h1>${E(s.title)}</h1><div class="m">${s.type} · ${s.chapters.length} chapters</div><div style="margin:8px 0">${s.genres.map(g=>`<span class="chip">${E(g)}</span>`).join('')}</div><a class="btn p" href="#r/${id}/0">▶ Padhna shuru karo</a> <a class="btn" href="#r/${id}/${s.chapters.length-1}">Latest</a></div></div><p>${E(s.desc||'')}</p><h2>Chapters</h2>${s.chapters.map((c,i)=>`<a class="ch" href="#r/${id}/${i}"><span>${E(c.name)}</span><span class="m">${c.pages} pages</span></a>`).reverse().join('')}`}
+$('#app').innerHTML=`<div class="sd"><img src="${cv(s)}" alt=""><div><h1>${E(s.title)}</h1><div class="m">${s.type} · ${s.chapters.length} chapters</div><div style="margin:8px 0">${s.genres.map(g=>`<span class="chip">${E(g)}</span>`).join('')}</div><a class="btn p" href="#r/${id}/0">▶ Padhna shuru karo</a> <a class="btn" href="#r/${id}/${s.chapters.length-1}">Latest</a></div></div><p>${E(s.desc||'')}</p><h2>Chapters</h2>${s.chapters.map((c,i)=>`<a class="ch" href="#r/${id}/${i}"><span>${E(c.name)}</span><span class="m">${c.pages} pages</span></a>`).reverse().join('')}`}
 function rdr(id,ci){const s=D.find(x=>x.id===id),c=s&&s.chapters[ci];if(!c){location.hash='';return}
 ser(id);const n=s.chapters.length,pv=ci?`href="#r/${id}/${ci-1}"`:'',nx=ci<n-1?`href="#r/${id}/${ci+1}"`:'';
 rd.innerHTML=`<div class="bar"><a class="btn" href="#s/${id}">✕</a><span>${E(s.title)} · ${E(c.name)}</span></div>`
@@ -79,13 +97,13 @@ rd.innerHTML=`<div class="bar"><a class="btn" href="#s/${id}">✕</a><span>${E(s
 +`<div class="bb"><a class="btn ${pv?'':'off'}" ${pv}>← Pichla</a><span>${E(c.name)} · ${ci+1}/${n}</span><a class="btn p ${nx?'':'off'}" ${nx}>Agla →</a></div>`;
 ly=0;rd.classList.remove('hid');rd.scrollTop=0}
 
-function adm(){
+async function adm(){try{D=await(await fetch('data.json?t='+Date.now())).json()}catch(e){}
 $('#app').innerHTML=`<h1>Admin</h1><div class="panel"><label class="m">GitHub token</label><input id="tk" type="password" value="${E(localStorage.getItem('tk')||'')}" placeholder="github_pat_...">
 <label class="m">Series</label><select id="sel" onchange="$('#nw').hidden=this.value!=''"><option value="">+ Nayi series</option>${D.map(s=>`<option value="${s.id}">${E(s.title)}</option>`).join('')}</select>
 <div id="nw"><label class="m">Naam</label><input id="t"><label class="m">Description</label><textarea id="ds" rows="2"></textarea><label class="m">Type</label><select id="ty"><option>Manhwa</option><option>Manga</option><option>Webtoon</option><option>Comic</option></select><label class="m">Genres (comma se)</label><input id="gn" placeholder="Action, Fantasy"></div>
 <label class="m">Chapter ka naam</label><input id="cn" value="Chapter 1"><label class="m">PDF ya images</label><input id="f" type="file" accept="image/*,application/pdf" multiple>
 <button class="btn p" id="go" onclick="up()">Upload karo</button><p class="m" id="st"></p></div>`}
-const api=async(p,o={})=>{const r=await fetch('https://api.github.com/repos/'+O+'/'+R+p,{method:o.method||'GET',headers:{Authorization:'Bearer '+TK,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:o.body&&JSON.stringify(o.body)});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,100));return r.json()};
+const api=async(p,o={})=>{for(let t=0;;t++){try{const r=await fetch('https://api.github.com/repos/'+O+'/'+R+p,{method:o.method||'GET',cache:'no-store',headers:{Authorization:'Bearer '+TK,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:o.body&&JSON.stringify(o.body)});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,100));return await r.json()}catch(e){if(t>=3||(/^\d/.test(e.message)&&e.message[0]!=='5'))throw e;await new Promise(z=>setTimeout(z,1500))}}};
 const b64=c=>new Promise(r=>c.toBlob(b=>{const fr=new FileReader;fr.onload=()=>r(fr.result.split(',')[1]);fr.readAsDataURL(b)},'image/jpeg',.82));
 async function jpgs(files){const out=[];
 for(const f of files){
@@ -111,7 +129,7 @@ let s=data.find(x=>x.id===sid);
 if(!s){sid=(t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'s')+'-'+Date.now().toString(36).slice(-4);
 s={id:sid,title:t,desc:$('#ds').value.trim(),type:$('#ty').value,genres:$('#gn').value.split(',').map(x=>x.trim()).filter(Boolean),chapters:[]};data.push(s)}
 const n=s.chapters.length+1;
-s.chapters.push({name:$('#cn').value.trim()||'Chapter '+n,pages:im.length});s.upd=Date.now();
+s.chapters.push({name:$('#cn').value.trim()||'Chapter '+n,pages:im.length,t:Date.now()});s.upd=Date.now();
 const tree=[];
 for(let i=0;i<im.length;i++){st.textContent='Upload '+(i+1)+'/'+im.length;
 const bl=await api('/git/blobs',{method:'POST',body:{content:im[i],encoding:'base64'}});
