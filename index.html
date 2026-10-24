@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="canonical" href="https://skycomicx.github.io/">
+<meta property="og:url" content="https://skycomicx.github.io/">
+<title>SkyComic – Free Manga, Manhwa &amp; Webtoon Reader</title>
+<meta name="description" content="SkyComic: manga, manhwa aur webtoon padhne ki free website. Search, genres, chapter list aur smooth reader.">
+<meta property="og:title" content="SkyComic – Manga, Manhwa &amp; Webtoon">
+<meta property="og:description" content="Free manga, manhwa aur webtoon reader with search, genres aur reading progress.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"SkyComic","description":"Manga, manhwa and webtoon reader"}</script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f5f8;--card:#fff;--tx:#16181d;--mut:#6b7280;--ac:#e8472a;--bd:#e2e4ea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1014;--card:#181b22;--tx:#eceef2;--mut:#8b91a0;--ac:#ff6b4a;--bd:#272b35}}
+:root[data-theme="dark"]{--bg:#0e1014;--card:#181b22;--tx:#eceef2;--mut:#8b91a0;--ac:#ff6b4a;--bd:#272b35}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:4;display:flex;gap:8px;align-items:center;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bd)}
+.logo{font-weight:800;font-size:18px;cursor:pointer;white-space:nowrap}.logo span{color:var(--ac)}
+header input{flex:1;min-width:0}
+main{max-width:1000px;margin:0 auto;padding:14px 12px 40px}
+h2{font-size:18px;margin:22px 0 10px}h1{font-size:22px;margin:0 0 6px}
+button,input,select,textarea{font:inherit;color:var(--tx)}
+button{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;cursor:pointer}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+button.d{color:#d33}
+input[type=text],select,textarea{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:9px 11px;margin:4px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:12px}
+.card{cursor:pointer}
+.card img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;display:block;background:var(--bd)}
+.card b{display:block;font-size:13.5px;margin-top:6px;line-height:1.25}
+.card small,.mut{color:var(--mut);font-size:13px}
+.hero{display:flex;gap:14px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;cursor:pointer}
+.hero img{width:105px;aspect-ratio:2/3;object-fit:cover;border-radius:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 11px;border-radius:99px;border:1px solid var(--bd);background:var(--card);font-size:13px;cursor:pointer}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}
+.ch{display:flex;justify-content:space-between;padding:11px 12px;background:var(--card);border:1px solid var(--bd);border-radius:10px;margin-bottom:7px;cursor:pointer}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sd{display:flex;gap:14px;align-items:flex-start}.sd img{width:130px;aspect-ratio:2/3;object-fit:cover;border-radius:12px}
+.empty{text-align:center;color:var(--mut);padding:36px 8px}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:20px 12px}
+.rd{position:fixed;inset:0;background:#000;overflow-y:auto;z-index:9;color:#fff}
+.bar{position:sticky;top:0;display:flex;gap:6px;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px;background:rgba(0,0,0,.88);z-index:10}
+.bar button{background:#222;border-color:#333;color:#fff;padding:7px 11px}
+.pg{display:block;width:100%;max-width:800px;margin:0 auto}
+.paged{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 60px)}
+.paged img{max-width:100%;max-height:calc(100vh - 60px);object-fit:contain}
+</style></head><body>
+<header><div class="logo" onclick="go('home')">Sky<span>Comic</span></div>
+<input type="text" id="sq" placeholder="Search manga, manhwa..." oninput="onSearch(this.value)" style="margin:0">
+<button onclick="go('browse')">Browse</button><button class="p" onclick="go('add')">+ Add</button></header>
+<main id="app"></main>
+<footer>SkyComic hosts only content its uploaders have rights to. Takedown requests: contact the site owner.</footer>
+<div class="rd" id="rd" hidden></div>
+<script>
+const G=['Action','Fantasy','Romance','Comedy','Drama','Sci-Fi','Slice of Life','Mystery'];
+let db=null,mem=[],mine=[],v='home',q='',g='',cur=null,mode='webtoon',rc=0,rp=0;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const url=b=>typeof b==='string'?b:URL.createObjectURL(b);
+function svg(t,a,b,w,h,big){const s=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='${w}' height='${h}' fill='url(#g)'/><circle cx='${w*.72}' cy='${h*.27}' r='${w*.22}' fill='#fff' opacity='.2'/><path d='M0 ${h}L${w*.4} ${h*.62}L${w*.7} ${h*.85}L${w} ${h*.55}V${h}Z' fill='#000' opacity='.3'/><text x='50%' y='${big?'50%':'84%'}' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='${w/(big?7:10)}' fill='#fff'>${t}</text></svg>`;return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s)}
+function demo(id,title,desc,genres,type,a,b,ts){const chs=[1,2,3].map(c=>({name:'Chapter '+c,pages:[1,2,3,4].map(p=>svg('Ch '+c+' - Page '+p,a,b,800,1200,true))}));return{id,title,desc,genres,type,status:'Ongoing',cover:svg(title.split(' ')[0],a,b,400,600,false),chapters:chs,last:0,upd:ts,demo:1}}
+const DEMO=[
+demo('d1','Neel Nagar ki Raatein','Ek chhote shehar me raat ko ajeeb roshniyan dikhti hain. Ek ladki is rahasya ki talash me nikalti hai. (Sample series)',['Mystery','Drama'],'Manhwa','#1d2b64','#6a3fbf',3),
+demo('d2','Aakash Yoddha','Ek anaath ladka aasman ki shaktiyan paata hai aur apne gaon ko bachane nikalta hai. (Sample series)',['Action','Fantasy'],'Manga','#f2994a','#d63a2f',2),
+demo('d3','Chai aur Barish','Do purane doston ki monsoon wali chhoti si kahani. (Sample series)',['Romance','Slice of Life','Comedy'],'Webtoon','#11998e','#38ef7d',1)];
+const all=()=>DEMO.concat(mine).sort((a,b)=>b.upd-a.upd);
+
+function openDB(){return new Promise(r=>{try{const o=indexedDB.open('panna2',1);o.onupgradeneeded=()=>o.result.createObjectStore('s',{keyPath:'id'});o.onsuccess=()=>r(o.result);o.onerror=()=>r(null)}catch(e){r(null)}})}
+function loadAll(){return new Promise(r=>{if(!db)return r(mem);try{const o=db.transaction('s').objectStore('s').getAll();o.onsuccess=()=>r(o.result);o.onerror=()=>r(mem)}catch(e){r(mem)}})}
+function put(s){if(s.demo)return;if(!db){if(!mem.includes(s))mem.push(s);return}try{db.transaction('s','readwrite').objectStore('s').put(s)}catch(e){}}
+function rm(id){mem=mem.filter(x=>x.id!==id);if(db){try{db.transaction('s','readwrite').objectStore('s').delete(id)}catch(e){}}}
+const sortF=f=>[...f].filter(x=>x.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+
+async function init(){db=await openDB();mine=await loadAll();go('home')}
+function go(x){v=x;if(x!=='series')document.title='SkyComic – Free Manga, Manhwa & Webtoon Reader';window.scrollTo(0,0);render()}
+function onSearch(t){q=t;if(v!=='browse'){v='browse';render()}else results()}
+function render(){({home,browse,add,series}[v])()}
+function card(s){return`<div class="card" onclick="openS('${s.id}')"><img loading="lazy" src="${url(s.cover)}" alt="${esc(s.title)}"><b>${esc(s.title)}</b><small>${s.type} · ${s.chapters.length} ch</small></div>`}
+function chips(on){return`<div class="chips">${G.map(x=>`<span class="chip ${on===x?'on':''}" onclick="setG('${x}')">${x}</span>`).join('')}</div>`}
+function setG(x){g=g===x?'':x;if(v==='browse'){render()}else go('browse')}
+
+function home(){
+  const a=all(),h=a[0];
+  $('#app').innerHTML=`<div class="hero" onclick="openS('${h.id}')"><img src="${url(h.cover)}" alt=""><div><span class="mut">Featured</span><h1>${esc(h.title)}</h1><div class="mut">${h.genres.join(' · ')}</div><p>${esc(h.desc).slice(0,140)}</p><button class="p">Padhna shuru karo</button></div></div>
+  <h2>Genres</h2>${chips('')}
+  <h2>Latest Updates</h2><div class="grid">${a.map(card).join('')}</div>
+  <h2>Apni series add karo</h2><div class="panel mut">Apne phone se pages (images) chuno aur apni khud ki library banao. <button class="p" onclick="go('add')">+ Series add</button></div>`;
+}
+function browse(){
+  $('#app').innerHTML=`<h1>Browse</h1>${chips(g)}<div id="res" style="margin-top:14px"></div>`;$('#sq').value=q;results();
+}
+function results(){
+  const f=all().filter(s=>(!g||s.genres.includes(g))&&(s.title+' '+s.genres.join(' ')+' '+s.type).toLowerCase().includes(q.toLowerCase()));
+  $('#res').innerHTML=f.length?`<div class="grid">${f.map(card).join('')}</div>`:'<div class="empty">Kuch nahi mila. Doosra naam ya genre try karo.</div>';
+}
+function add(){
+  $('#app').innerHTML=`<h1>Nayi Series</h1><div class="panel"><label class="mut">Naam</label><input type="text" id="t">
+  <label class="mut">Description</label><textarea id="ds" rows="3"></textarea>
+  <label class="mut">Type</label><select id="ty"><option>Manga</option><option>Manhwa</option><option>Webtoon</option><option>Comic</option></select>
+  <label class="mut">Genres</label><div class="chips" id="gc" style="margin:6px 0 12px">${G.map(x=>`<span class="chip" onclick="this.classList.toggle('on')">${x}</span>`).join('')}</div>
+  <label class="mut">Pehle chapter ka naam</label><input type="text" id="c" value="Chapter 1">
+  <label class="mut">Pages (images chuno, order file naam se hoga)</label><input type="file" id="f" accept="image/*" multiple style="margin:6px 0 14px;width:100%">
+  <p class="mut">Sirf wahi content add karo jo tumhara apna hai ya jisko share karne ki tumhe ijazat hai.</p>
+  <button class="p" onclick="createS()">Save karo</button></div>`;
+}
+function createS(){
+  const t=$('#t').value.trim(),f=sortF($('#f').files);
+  if(!t||!f.length){alert('Naam aur kam se kam ek image zaruri hai');return}
+  const s={id:'u'+Date.now(),title:t,desc:$('#ds').value.trim(),type:$('#ty').value,status:'Ongoing',genres:[...document.querySelectorAll('#gc .on')].map(e=>e.textContent),cover:f[0],chapters:[{name:$('#c').value.trim()||'Chapter 1',pages:f}],last:0,upd:Date.now()};
+  mine.push(s);put(s);openS(s.id);
+}
+function openS(id){cur=all().find(s=>s.id===id);v='series';window.scrollTo(0,0);series()}
+function series(){
+  const s=cur;document.title=s.title+' – SkyComic';
+  $('#app').innerHTML=`<div class="sd"><img src="${url(s.cover)}" alt="${esc(s.title)}"><div><h1>${esc(s.title)}</h1><div class="mut">${s.type} · ${s.status} · ${s.chapters.length} chapters</div><div class="chips" style="margin:8px 0">${s.genres.map(x=>`<span class="chip" onclick="setG('${x}')">${x}</span>`).join('')}</div>
+  <div class="row"><button class="p" onclick="read(${s.last||0},0)">▶ ${s.last?'Continue':'Padhna shuru karo'}</button><button onclick="read(${s.chapters.length-1},0)">Latest</button></div></div></div>
+  <p>${esc(s.desc||'Description nahi di gayi.')}</p>
+  ${s.demo?'':`<div class="panel"><div class="row"><input type="text" id="c" placeholder="Naye chapter ka naam" style="flex:1;margin:0"><input type="file" id="f" accept="image/*" multiple style="width:100%"><button onclick="addCh()">+ Chapter add</button></div></div>`}
+  <h2>Chapters</h2>${s.chapters.map((c,i)=>`<div class="ch" onclick="read(${i},0)"><span>${esc(c.name)}</span><span class="mut">${c.pages.length} pages</span></div>`).reverse().join('')}
+  ${s.demo?'':'<p><button class="d" onclick="delS()">Series delete karo</button></p>'}`;
+}
+function addCh(){
+  const f=sortF($('#f').files);if(!f.length){alert('Pehle images chuno');return}
+  cur.chapters.push({name:$('#c').value.trim()||'Chapter '+(cur.chapters.length+1),pages:f});cur.upd=Date.now();put(cur);series();
+}
+function delS(){if(confirm('Ye series delete kar dein?')){rm(cur.id);mine=mine.filter(x=>x!==cur);go('home')}}
+
+function read(ci,pi){rc=ci;rp=pi;cur.last=ci;put(cur);drawR()}
+function drawR(){
+  const ch=cur.chapters[rc],r=$('#rd');r.hidden=false;document.body.style.overflow='hidden';
+  const bar=`<div class="bar"><button onclick="closeR()">✕</button><span style="font-size:14px;flex:1;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(cur.title)} · ${esc(ch.name)}${mode==='paged'?` (${rp+1}/${ch.pages.length})`:''}</span><button onclick="mode=mode==='paged'?'webtoon':'paged';rp=0;drawR()">${mode==='paged'?'Paged':'Scroll'}</button></div>`;
+  const nav=`<div class="row" style="justify-content:center;padding:20px"><button onclick="read(rc-1,0)" ${rc?'':'disabled'}>← Pichla</button><button class="p" onclick="read(rc+1,0)" ${rc<cur.chapters.length-1?'':'disabled'}>Agla chapter →</button></div>`;
+  r.innerHTML=bar+(mode==='webtoon'?ch.pages.map(p=>`<img class="pg" loading="lazy" src="${url(p)}" alt="">`).join('')+nav:`<div class="paged" onclick="tapP(event)"><img src="${url(ch.pages[rp])}" alt=""></div>`);
+  if(mode==='webtoon')r.scrollTop=0;
+}
+function tapP(e){
+  const n=cur.chapters[rc].pages.length;
+  if(e.clientX<innerWidth/2){if(rp>0){rp--;drawR()}else if(rc>0)read(rc-1,cur.chapters[rc-1].pages.length-1)}
+  else{if(rp<n-1){rp++;drawR()}else if(rc<cur.chapters.length-1)read(rc+1,0)}
+}
+function closeR(){$('#rd').hidden=true;document.body.style.overflow='';series()}
+init();
+</script></body></html>
