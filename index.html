@@ -55,7 +55,9 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px 12px}
 <main id="app"></main>
 <footer>SkyComic hosts only content its uploaders have rights to. Takedown requests: contact the site owner.</footer>
 <div class="rd" id="rd" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
+if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"}
 const G=['Action','Fantasy','Romance','Comedy','Drama','Sci-Fi','Slice of Life','Mystery'];
 let db=null,mem=[],mine=[],v='home',q='',g='',cur=null,mode='webtoon',rc=0,rp=0;
 const $=s=>document.querySelector(s);
@@ -75,6 +77,29 @@ function put(s){if(s.demo)return;if(!db){if(!mem.includes(s))mem.push(s);return}
 function rm(id){mem=mem.filter(x=>x.id!==id);if(db){try{db.transaction('s','readwrite').objectStore('s').delete(id)}catch(e){}}}
 const sortF=f=>[...f].filter(x=>x.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
 
+async function pdfToImages(file,k,scale=1.5){
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const out=[];
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const vp=page.getViewport({scale});
+    const c=document.createElement('canvas');
+    c.width=vp.width;c.height=vp.height;
+    await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+    const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.8));
+    out.push(new File([blob],'p'+k+'-page-'+String(i).padStart(4,'0')+'.jpg',{type:'image/jpeg'}));
+  }
+  return out;
+}
+async function prep(list){
+  const out=[];let k=0;
+  for(const f of list){
+    if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){out.push(...await pdfToImages(f,k++))}
+    else out.push(f);
+  }
+  return sortF(out);
+}
+
 async function init(){db=await openDB();mine=await loadAll();go('home')}
 function go(x){v=x;if(x!=='series')document.title='SkyComic – Free Manga, Manhwa & Webtoon Reader';window.scrollTo(0,0);render()}
 function onSearch(t){q=t;if(v!=='browse'){v='browse';render()}else results()}
@@ -88,7 +113,7 @@ function home(){
   $('#app').innerHTML=`<div class="hero" onclick="openS('${h.id}')"><img src="${url(h.cover)}" alt=""><div><span class="mut">Featured</span><h1>${esc(h.title)}</h1><div class="mut">${h.genres.join(' · ')}</div><p>${esc(h.desc).slice(0,140)}</p><button class="p">Padhna shuru karo</button></div></div>
   <h2>Genres</h2>${chips('')}
   <h2>Latest Updates</h2><div class="grid">${a.map(card).join('')}</div>
-  <h2>Apni series add karo</h2><div class="panel mut">Apne phone se pages (images) chuno aur apni khud ki library banao. <button class="p" onclick="go('add')">+ Series add</button></div>`;
+  <h2>Apni series add karo</h2><div class="panel mut">Apne phone se pages (images ya PDF) chuno aur apni khud ki library banao. <button class="p" onclick="go('add')">+ Series add</button></div>`;
 }
 function browse(){
   $('#app').innerHTML=`<h1>Browse</h1>${chips(g)}<div id="res" style="margin-top:14px"></div>`;$('#sq').value=q;results();
@@ -103,13 +128,17 @@ function add(){
   <label class="mut">Type</label><select id="ty"><option>Manga</option><option>Manhwa</option><option>Webtoon</option><option>Comic</option></select>
   <label class="mut">Genres</label><div class="chips" id="gc" style="margin:6px 0 12px">${G.map(x=>`<span class="chip" onclick="this.classList.toggle('on')">${x}</span>`).join('')}</div>
   <label class="mut">Pehle chapter ka naam</label><input type="text" id="c" value="Chapter 1">
-  <label class="mut">Pages (images chuno, order file naam se hoga)</label><input type="file" id="f" accept="image/*" multiple style="margin:6px 0 14px;width:100%">
+  <label class="mut">Pages (images ya PDF chuno, order file naam se hoga)</label><input type="file" id="f" accept="image/*,application/pdf" multiple style="margin:6px 0 14px;width:100%">
   <p class="mut">Sirf wahi content add karo jo tumhara apna hai ya jisko share karne ki tumhe ijazat hai.</p>
   <button class="p" onclick="createS()">Save karo</button></div>`;
 }
-function createS(){
-  const t=$('#t').value.trim(),f=sortF($('#f').files);
-  if(!t||!f.length){alert('Naam aur kam se kam ek image zaruri hai');return}
+async function createS(){
+  const b=event.target,t=$('#t').value.trim(),files=$('#f').files;
+  if(!t||!files.length){alert('Naam aur kam se kam ek image ya PDF zaruri hai');return}
+  b.disabled=true;b.textContent='Ruko, pages ban rahe hain...';
+  let f;
+  try{f=await prep(files)}catch(e){alert('File read nahi hui. Dusri file try karo.');b.disabled=false;b.textContent='Save karo';return}
+  if(!f.length){alert('Koi page nahi mila');b.disabled=false;b.textContent='Save karo';return}
   const s={id:'u'+Date.now(),title:t,desc:$('#ds').value.trim(),type:$('#ty').value,status:'Ongoing',genres:[...document.querySelectorAll('#gc .on')].map(e=>e.textContent),cover:f[0],chapters:[{name:$('#c').value.trim()||'Chapter 1',pages:f}],last:0,upd:Date.now()};
   mine.push(s);put(s);openS(s.id);
 }
@@ -119,12 +148,17 @@ function series(){
   $('#app').innerHTML=`<div class="sd"><img src="${url(s.cover)}" alt="${esc(s.title)}"><div><h1>${esc(s.title)}</h1><div class="mut">${s.type} · ${s.status} · ${s.chapters.length} chapters</div><div class="chips" style="margin:8px 0">${s.genres.map(x=>`<span class="chip" onclick="setG('${x}')">${x}</span>`).join('')}</div>
   <div class="row"><button class="p" onclick="read(${s.last||0},0)">▶ ${s.last?'Continue':'Padhna shuru karo'}</button><button onclick="read(${s.chapters.length-1},0)">Latest</button></div></div></div>
   <p>${esc(s.desc||'Description nahi di gayi.')}</p>
-  ${s.demo?'':`<div class="panel"><div class="row"><input type="text" id="c" placeholder="Naye chapter ka naam" style="flex:1;margin:0"><input type="file" id="f" accept="image/*" multiple style="width:100%"><button onclick="addCh()">+ Chapter add</button></div></div>`}
+  ${s.demo?'':`<div class="panel"><div class="row"><input type="text" id="c" placeholder="Naye chapter ka naam" style="flex:1;margin:0"><input type="file" id="f" accept="image/*,application/pdf" multiple style="width:100%"><button onclick="addCh()">+ Chapter add</button></div></div>`}
   <h2>Chapters</h2>${s.chapters.map((c,i)=>`<div class="ch" onclick="read(${i},0)"><span>${esc(c.name)}</span><span class="mut">${c.pages.length} pages</span></div>`).reverse().join('')}
   ${s.demo?'':'<p><button class="d" onclick="delS()">Series delete karo</button></p>'}`;
 }
-function addCh(){
-  const f=sortF($('#f').files);if(!f.length){alert('Pehle images chuno');return}
+async function addCh(){
+  const b=event.target,files=$('#f').files;
+  if(!files.length){alert('Pehle images ya PDF chuno');return}
+  b.disabled=true;b.textContent='Ruko, pages ban rahe hain...';
+  let f;
+  try{f=await prep(files)}catch(e){alert('File read nahi hui. Dusri file try karo.');b.disabled=false;b.textContent='+ Chapter add';return}
+  if(!f.length){alert('Koi page nahi mila');b.disabled=false;b.textContent='+ Chapter add';return}
   cur.chapters.push({name:$('#c').value.trim()||'Chapter '+(cur.chapters.length+1),pages:f});cur.upd=Date.now();put(cur);series();
 }
 function delS(){if(confirm('Ye series delete kar dein?')){rm(cur.id);mine=mine.filter(x=>x!==cur);go('home')}}
