@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="SkyComic - read manga, manhwa and manhua online.">
+<meta name="theme-color" content="#04161c">
+<title>SkyComic - Read Manga &amp; Manhwa Online</title>
+<style>
+:root{--bg:#04161c;--c1:#0d9488;--c2:#0ea5e9;--c3:#1d4ed8;--gl:rgba(255,255,255,.07);--gl2:rgba(255,255,255,.11);--bd:rgba(150,255,240,.18);--hi:rgba(200,255,250,.22);--sh:rgba(0,0,0,.35);--bl:26px;--r:24px;--tx:#e6fffb;--ac:#2dd4bf;--ac2:#04201f}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:hidden}
+.blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.7;z-index:0;pointer-events:none}
+.b1{width:300px;height:300px;top:-70px;left:-90px;background:var(--c1)}
+.b2{width:280px;height:280px;top:38%;right:-110px;background:var(--c2)}
+.b3{width:320px;height:320px;bottom:-110px;left:8%;background:var(--c3)}
+.g{background:var(--gl);border:1px solid var(--bd);backdrop-filter:blur(var(--bl)) saturate(170%);-webkit-backdrop-filter:blur(var(--bl)) saturate(170%);box-shadow:inset 0 1px 0 var(--hi),0 8px 30px var(--sh);border-radius:var(--r)}
+.wrap{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 120px}
+.top{position:sticky;top:calc(8px + env(safe-area-inset-top,0px));z-index:4;display:flex;gap:10px;align-items:center;padding:10px 12px;margin-bottom:14px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;letter-spacing:-.5px;cursor:pointer}.logo b{color:var(--ac)}
+.lg{position:relative;flex:none;width:46px;height:46px;border-radius:50%;padding:3px;background:linear-gradient(145deg,rgba(255,255,255,.28),rgba(255,255,255,.06));border:1px solid rgba(190,170,255,.45);backdrop-filter:blur(14px) saturate(180%);-webkit-backdrop-filter:blur(14px) saturate(180%);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -6px 12px rgba(120,80,255,.25),0 0 18px rgba(139,92,246,.55),0 6px 16px rgba(0,0,0,.4);overflow:hidden}
+.lg img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;opacity:.95}
+.lg::after{content:"";position:absolute;left:8%;top:4%;width:84%;height:42%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0));pointer-events:none}
+.search{flex:1;min-width:0;width:100%;padding:10px 14px;border-radius:99px;font-size:14px;color:var(--tx);background:var(--gl2);border:1px solid var(--bd);outline:none}
+.search::placeholder{color:var(--tx);opacity:.55}
+.hero{position:relative;height:330px;overflow:hidden;margin-bottom:18px;cursor:pointer}
+.hero .cv{position:absolute;inset:0;border-radius:0}
+.info{position:absolute;left:10px;right:10px;bottom:10px;padding:14px}
+.hero h2{font-size:22px;letter-spacing:-.4px;margin-bottom:4px}
+.hero p{font-size:12px;opacity:.8;margin-bottom:10px}
+.btns{display:flex;gap:8px}
+.btn{padding:10px 16px;border-radius:99px;font-size:13px;font-weight:700;background:var(--ac);color:var(--ac2);border:0;cursor:pointer;font-family:inherit}
+.btn.s{background:var(--gl2);color:var(--tx);border:1px solid var(--bd)}
+.btn.on{background:var(--gl2);color:var(--ac);border:1px solid var(--ac)}
+.car{display:flex;gap:12px;overflow-x:auto;padding:0 6%;margin:0 -14px;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.car::-webkit-scrollbar{display:none}
+.car .hero{flex:none;width:88%;margin-bottom:0;scroll-snap-align:center}
+.dots{display:flex;justify-content:center;gap:6px;margin:10px 0 18px}
+.dots i{width:7px;height:7px;border-radius:99px;background:var(--tx);opacity:.3;transition:all .3s}
+.dots i.on{width:22px;background:var(--ac);opacity:1}
+.sec{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 10px}
+.sec h3{font-size:18px;letter-spacing:-.3px}.sec span{font-size:12px;color:var(--ac);font-weight:700;cursor:pointer}
+.row{display:flex;gap:11px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.card{flex:none;width:130px;cursor:pointer}
+.cv{background-size:cover;background-position:center;background-image:linear-gradient(165deg,hsl(var(--h) 75% 55%),hsl(calc(var(--h) + 55) 70% 22%));position:relative}
+.cover{height:182px;border-radius:calc(var(--r) - 6px);overflow:hidden;display:flex;align-items:flex-end;padding:8px;font-weight:800;font-size:15px;line-height:1.05;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.cover.noimg::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.35),transparent 50%)}
+.cover span{position:relative;z-index:1}
+.card .cover{align-items:flex-end;justify-content:flex-start;text-align:left;font-size:13px;line-height:1.2;padding:10px}
+.card .cover span.tag{position:absolute}
+.tag{position:absolute;top:7px;left:7px;z-index:2;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff}
+.card p{font-size:12.5px;margin:6px 2px 0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card small{font-size:11px;opacity:.6;margin-left:2px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+@media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
+.grid .card{width:auto}.grid .cover{height:215px}
+.list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.li{display:flex;gap:12px;padding:10px;align-items:center;cursor:pointer}
+.li .cover{width:62px;height:84px;flex:none;padding:0;font-size:0}
+.li h4{font-size:14px}.li p{font-size:12px;opacity:.7;margin-top:3px}
+.li .go{margin-left:auto;font-size:11px;font-weight:700;padding:8px 13px;border-radius:99px;background:var(--ac);color:var(--ac2)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 14px;border-radius:99px;font-size:13px;font-weight:600;border:1px solid var(--bd);background:var(--gl);cursor:pointer;opacity:.75}
+.chip.on{background:var(--ac);color:var(--ac2);opacity:1;border-color:transparent}
+.empty{text-align:center;padding:40px 20px;opacity:.7;font-size:14px;line-height:1.6}
+h1.page{font-size:24px;margin:0 2px 12px;letter-spacing:-.5px}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;gap:4px;padding:8px;border-radius:99px;width:min(360px,calc(100% - 28px))}
+.nav div{position:relative;z-index:1;flex:1;text-align:center;font-size:12px;font-weight:600;padding:10px 0;border-radius:99px;opacity:.7;cursor:pointer}
+.nav div.a{color:var(--ac2);opacity:1}
+.sheet-bg{position:fixed;inset:0;z-index:8;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .45s ease}
+.sheet-bg.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:9;max-width:640px;margin:0 auto;max-height:88vh;overflow-y:auto;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));border-radius:var(--r) var(--r) 0 0;background:rgba(8,30,38,.82);transform:translateY(105%);transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.sheet.show{transform:none}
+.dh{display:flex;gap:14px;margin-bottom:14px}
+.dh .cover{width:112px;height:158px;flex:none}
+.dh h2{font-size:20px;letter-spacing:-.4px;margin-bottom:6px}
+.meta{font-size:12px;opacity:.7;margin-bottom:10px;line-height:1.5}
+.desc{font-size:13.5px;line-height:1.55;opacity:.85;margin-bottom:14px}
+.ch{cursor:pointer;display:flex;justify-content:space-between;padding:12px 14px;margin-bottom:8px;font-size:14px;font-weight:600;border-radius:16px;color:var(--tx);text-decoration:none;background:var(--gl2);border:1px solid var(--bd)}
+.ch small{opacity:.55;font-weight:500}
+.close{float:right;font-size:22px;line-height:1;opacity:.7;cursor:pointer;padding:0 4px}
+#rd{position:fixed;inset:0;z-index:30;background:#000;display:none}
+#rd.show{display:block;animation:fadeIn .45s ease}
+.rscroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.rscroll img{display:block;width:100%;max-width:720px;margin:0 auto;min-height:220px}
+.demo{max-width:720px;margin:0 auto;height:min(125vw,900px);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:34px;font-weight:800;background:linear-gradient(165deg,hsl(var(--h) 60% 40%),hsl(calc(var(--h) + 50) 60% 14%));color:#fff;text-align:center;padding:20px}
+.demo small{font-size:12px;font-weight:500;opacity:.7;margin-top:10px;max-width:270px;line-height:1.5}
+.rend{max-width:720px;margin:0 auto;padding:40px 20px 70px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;color:var(--tx)}
+.rend p{font-size:13px;opacity:.7}
+.rtop,.rbot{position:absolute;left:10px;right:10px;max-width:640px;margin:0 auto;z-index:2;display:flex;align-items:center;gap:12px;padding:10px 14px;transition:transform .3s,opacity .3s;color:var(--tx)}
+.rtop{top:calc(8px + env(safe-area-inset-top,0px))}
+.rbot{bottom:calc(12px + env(safe-area-inset-bottom,0px));justify-content:space-between;font-size:13px;font-weight:700}
+.rtop b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw}.rtop small{font-size:11px;opacity:.65}
+.rb{font-size:30px;line-height:1;padding:0 6px;cursor:pointer}
+#rd.hb .rtop{transform:translateY(-130%);opacity:0}
+#rd.hb .rbot{transform:translateY(130%);opacity:0}
+.rprog{position:absolute;top:0;left:0;height:3px;width:0;background:var(--ac);z-index:3}
+.pf{padding:22px 18px;text-align:center}
+.pf h3{font-size:16px;margin:12px 0 4px;word-break:break-all}
+.pf p{font-size:13px;opacity:.7;margin-bottom:14px}
+.av{width:72px;height:72px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;background:var(--ac);color:var(--ac2);box-shadow:0 0 26px rgba(45,212,191,.5)}
+.field{width:100%;margin-bottom:10px;padding:13px 16px;border-radius:16px;font-size:15px;color:var(--tx);background:var(--gl2);border:1px solid var(--bd);outline:none;font-family:inherit}
+.field::placeholder{color:var(--tx);opacity:.5}
+.pf .amsg{color:#fca5a5;opacity:1;margin:2px 0 12px}
+.pf .lnk{color:var(--ac);font-weight:600;margin:14px 0 0;cursor:pointer;opacity:1}
+.pf .sm{font-size:12px;margin:14px 0 0;opacity:.55}
+.toast{position:fixed;left:50%;top:calc(20px + env(safe-area-inset-top,0px));transform:translate(-50%,-90px);z-index:20;padding:10px 18px;font-size:13px;font-weight:600;transition:transform .35s;border-radius:99px}
+.toast.show{transform:translate(-50%,0)}
+footer{text-align:center;font-size:11px;opacity:.45;margin:20px 0}
+
+/* ===== SMOOTH ANIMATIONS ===== */
+@keyframes rise{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pop{0%{transform:scale(.82)}100%{transform:scale(1)}}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(46px,34px) scale(1.18)}}
+@keyframes glow{from{filter:brightness(1)}to{filter:brightness(1.3)}}
+html{scroll-behavior:smooth}
+.blob{will-change:transform}
+.b1{animation:drift 14s ease-in-out infinite alternate}
+.b2{animation:drift 18s ease-in-out -6s infinite alternate-reverse}
+.b3{animation:drift 16s ease-in-out -3s infinite alternate}
+.lg{animation:glow 3.5s ease-in-out infinite alternate}
+.view-in>*{animation:rise .75s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--k,0)*70ms)}
+.view-in .card,.view-in .li{animation:rise .7s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--c,0)*55ms + 180ms)}
+.view-in>.row .card,.view-in>.grid .card,.view-in>.list .li{animation-delay:calc(var(--c,0)*55ms + 180ms)}
+.btn,.chip,.card,.li,.ch,.nav div,.rb{transition:transform .35s cubic-bezier(.22,1,.36,1),background .35s,color .35s,opacity .35s,border-color .35s,box-shadow .35s}
+.btn:active,.chip:active,.card:active,.li:active,.ch:active,.rb:active{transform:scale(.95)}
+.btn.on{animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+.search{transition:background .35s,box-shadow .35s}
+.search:focus{background:rgba(255,255,255,.17);box-shadow:0 0 0 2px var(--ac)}
+.field{transition:box-shadow .3s,background .3s}.field:focus{box-shadow:0 0 0 2px var(--ac);background:rgba(255,255,255,.15)}
+.car .hero{transform:scale(.92);opacity:.6;transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .7s ease}
+.car .hero.cur{transform:scale(1);opacity:1}
+.cover{transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.card:active .cover{transform:scale(1.03)}
+.nav::before{content:"";position:absolute;top:8px;bottom:8px;left:8px;width:calc((100% - 28px)/4);border-radius:99px;background:var(--ac);box-shadow:0 0 18px rgba(45,212,191,.45);transform:translateX(calc(var(--i,0)*(100% + 4px)));transition:transform .6s cubic-bezier(.34,1.3,.5,1)}
+.sheet.show .ch{animation:rise .6s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--c,0)*45ms + 220ms)}
+.sheet.show.quiet .ch{animation:none}
+.rscroll img{animation:fadeIn .8s ease both}
+.rend{animation:rise .8s cubic-bezier(.22,1,.36,1) both}
+@media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<div class="wrap">
+  <div class="top g"><div class="logo" id="logo"><div class="lg"><img alt="Logo" src="data:image/webp;base64,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"></div><span>Sky<b>Comic</b></span></div><input class="search" id="q" type="search" placeholder="Search comics..." autocomplete="off"></div>
+  <div id="view"></div>
+  <footer>&copy; SkyComic. All rights belong to their respective owners.</footer>
+</div>
+<div class="nav g" id="nav"><div data-p="home">Home</div><div data-p="browse">Browse</div><div data-p="library">Library</div><div data-p="profile">Profile</div></div>
+<div class="sheet-bg" id="bg"></div>
+<div class="sheet g" id="sheet"></div>
+<div class="toast g" id="toast"></div>
+<div id="rd"></div>
+
+<script>
+/* ================== EDIT YOUR COMICS HERE ==================
+   id: unique, no spaces | title | type: Manhwa/Manga/Manhua
+   hue: 0-360 (cover color if no image) | img: cover image URL or "" (optional)
+   genres: list | status | desc: description
+   chapters: [{n:"Chapter 1", pages:["img1.jpg","img2.jpg"]}]  (pages = chapter images in order)
+============================================================ */
+let COMICS=[
+ {demo:true,id:"solo-leveling-ragnarok",title:"Solo Leveling: Ragnarok",type:"Manhwa",hue:265,img:"",genres:["Action","Fantasy"],status:"Ongoing",desc:"The story continues after the Monarchs' war, as a new threat rises and a new hero must face it.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"},{n:"Chapter 3",link:"#"}]},
+ {demo:true,id:"shadow-slave",title:"Shadow Slave",type:"Manhwa",hue:250,img:"",genres:["Action","Fantasy","Adventure"],status:"Ongoing",desc:"Sunny enters a nightmare world where survival means taking on shadows and gods alike.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"}]},
+ {demo:true,id:"teto-x-egen",title:"Teto x Egen",type:"Manhwa",hue:330,img:"",genres:["Romance","Comedy"],status:"Ongoing",desc:"A sweet and funny romance between two very different people.",chapters:[{n:"Chapter 1",link:"#"}]},
+ {demo:true,id:"eleceed",title:"Eleceed",type:"Manhwa",hue:210,img:"",genres:["Action","Comedy","Fantasy"],status:"Ongoing",desc:"A kind-hearted boy with lightning speed teams up with a cat who is secretly a powerful awakened.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"}]},
+ {demo:true,id:"tower-of-god",title:"Tower of God",type:"Manhwa",hue:190,img:"",genres:["Adventure","Fantasy","Mystery"],status:"Ongoing",desc:"Climb the Tower and everything you desire will be yours.",chapters:[{n:"Chapter 1",link:"#"}]},
+ {demo:true,id:"omniscient-reader",title:"Omniscient Reader",type:"Manhwa",hue:20,img:"",genres:["Action","Fantasy","Drama"],status:"Ongoing",desc:"The only reader of a web novel finds the story turning real, and he knows how it ends.",chapters:[{n:"Chapter 1",link:"#"}]},
+ {demo:true,id:"lookism",title:"Lookism",type:"Manhwa",hue:150,img:"",genres:["Drama","Action","Slice of Life"],status:"Ongoing",desc:"A bullied teen wakes up in a second, perfect body and lives two lives.",chapters:[{n:"Chapter 1",link:"#"}]}
+];
+/* ========================================================== */
+/* ============ LOGIN SETUP (Firebase) ============
+   Paste your Firebase web app keys here to turn on login. */
+const FIREBASE_CONFIG={apiKey:"",authDomain:"",projectId:"",appId:""};
+/* ================================================= */
+const $=i=>document.getElementById(i);
+const LS="skycomic_library";
+const lib=()=>{try{return JSON.parse(localStorage.getItem(LS))||[]}catch(e){return[]}};
+const saveLib=a=>{try{localStorage.setItem(LS,JSON.stringify(a))}catch(e){}if(FB&&user)FB.F.setDoc(FB.F.doc(FB.db,"users",user.uid),{library:a},{merge:true}).catch(()=>toast("Could not sync library"))};
+const has=id=>lib().includes(id);
+const find=id=>COMICS.find(c=>c.id==id);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+let FB=null,user=null,authMode="in",authMsg="",authEm="";
+let genre="All",query="";
+
+function cover(c,tag){
+  const im=c.img?`background-image:url('${esc(c.img)}')`:"";
+  return `<div class="cover cv ${c.img?"":"noimg"}" style="--h:${c.hue};${im}">${tag?`<span class="tag">${esc(tag)}</span>`:""}${c.img?"":`<span>${esc(c.title)}</span>`}</div>`;
+}
+const last=c=>c.chapters.length?c.chapters[c.chapters.length-1].n:"No chapters";
+const card=c=>`<div class="card" data-id="${c.id}">${cover(c,c.type)}<p>${esc(c.title)}</p><small>${esc(last(c))}</small></div>`;
+
+function home(){
+  if(!COMICS.length)return `<div class="empty g">No comics yet. Check back soon!</div>`;
+  const fe=[...COMICS].reverse().slice(0,8);
+  const slide=h=>`<div class="hero g" data-id="${h.id}"><div class="cv" style="--h:${h.hue};${h.img?`background-image:url('${esc(h.img)}')`:""}"></div>
+  <div class="info g"><h2>${esc(h.title)}</h2><p>${esc(h.genres.join(" · "))} · ${esc(h.status)}</p>
+  <div class="btns"><button class="btn" data-id="${h.id}">Read Now</button><button class="btn s ${has(h.id)?"on":""}" data-lib="${h.id}">${has(h.id)?"✓ In Library":"+ Add to Library"}</button></div></div></div>`;
+  return `<div class="car" id="car">${fe.map(slide).join("")}</div><div class="dots" id="dots">${fe.map((_,k)=>`<i class="${k?"":"on"}"></i>`).join("")}</div>
+  <div class="sec"><h3>Trending Comics</h3><span data-p="browse">All Comics →</span></div>
+  <div class="row">${[...COMICS].reverse().map(card).join("")}</div>
+  <div class="sec"><h3>Latest Updates</h3></div>
+  <div class="list">${[...COMICS].reverse().slice(0,5).map(c=>`<div class="li g" data-id="${c.id}">${cover(c)}<div><h4>${esc(c.title)}</h4><p>${esc(last(c))} · ${esc(c.type)}</p></div><div class="go">Read</div></div>`).join("")}</div>`;
+}
+function browse(){
+  const gs=["All",...new Set(COMICS.flatMap(c=>c.genres))];
+  const list=COMICS.filter(c=>(genre=="All"||c.genres.includes(genre))&&c.title.toLowerCase().includes(query.toLowerCase()));
+  return `<h1 class="page">Browse</h1><div class="chips">${gs.map(g=>`<div class="chip ${g==genre?"on":""}" data-g="${esc(g)}">${esc(g)}</div>`).join("")}</div>
+  ${list.length?`<div class="grid">${list.map(card).join("")}</div>`:`<div class="empty g">No comics found.</div>`}`;
+}
+function library(){
+  const l=lib().map(find).filter(Boolean);
+  return `<h1 class="page">My Library</h1>`+(FIREBASE_CONFIG.apiKey&&!user?`<div class="li g" data-p="profile" style="margin-bottom:12px;font-size:13px">Log in to keep your library on all devices<div class="go">Log in</div></div>`:"")+(l.length?`<div class="grid">${l.map(card).join("")}</div>`:`<div class="empty g">Your library is empty.<br>Open any comic and tap <b>Add to Library</b> to save it here.</div>`);
+}
+let carT,lastT=0;
+function startCar(){
+  clearInterval(carT);const c=$("car");if(!c)return;
+  const sl=[...c.children],pos=k=>sl[k].offsetLeft-(c.clientWidth-sl[k].offsetWidth)/2-c.offsetLeft+c.offsetLeft;
+  const cur=()=>{let b=0,d=1e9;sl.forEach((e,k)=>{const x=Math.abs(c.scrollLeft-(e.offsetLeft-(c.clientWidth-e.offsetWidth)/2));if(x<d){d=x;b=k}});return b};
+  c.addEventListener("scroll",()=>{const k=cur();document.querySelectorAll("#dots i").forEach((d,n)=>d.classList.toggle("on",n==k));sl.forEach((e,n)=>e.classList.toggle("cur",n==k))},{passive:true});
+  sl[0].classList.add("cur");
+  ["touchstart","pointerdown","wheel"].forEach(ev=>c.addEventListener(ev,()=>lastT=Date.now(),{passive:true}));
+  carT=setInterval(()=>{
+    if(!$("car")){clearInterval(carT);return}
+    if(Date.now()-lastT<6000||$("sheet").classList.contains("show"))return;
+    const n=(cur()+1)%sl.length;
+    c.scrollTo({left:sl[n].offsetLeft-(c.clientWidth-sl[n].offsetWidth)/2,behavior:"smooth"});
+  },3500);
+}
+
+/* ===== LOGIN / PROFILE ===== */
+async function initAuth(){
+  if(!FIREBASE_CONFIG.apiKey)return;
+  try{
+    const b="https://www.gstatic.com/firebasejs/10.14.1/";
+    const [A,Au,F]=await Promise.all([import(b+"firebase-app.js"),import(b+"firebase-auth.js"),import(b+"firebase-firestore.js")]);
+    const app=A.initializeApp(FIREBASE_CONFIG);
+    FB={Au,F,auth:Au.getAuth(app),db:F.getFirestore(app)};
+    Au.onAuthStateChanged(FB.auth,async u=>{
+      user=u;
+      if(u){
+        try{
+          const ref=F.doc(FB.db,"users",u.uid),snap=await F.getDoc(ref);
+          const cloud=snap.exists()?(snap.data().library||[]):[];
+          const m=[...new Set([...cloud,...lib()])];
+          try{localStorage.setItem(LS,JSON.stringify(m))}catch(e){}
+          if(m.length!=cloud.length)await F.setDoc(ref,{library:m},{merge:true});
+        }catch(e){toast("Could not load your library")}
+      }
+      render();
+    });
+  }catch(e){authMsg="Could not load the login service."}
+}
+const errMsg=c=>({"auth/invalid-credential":"Wrong email or password.","auth/invalid-email":"Please enter a valid email.","auth/email-already-in-use":"This email already has an account. Try logging in.","auth/weak-password":"Password must be at least 6 characters.","auth/too-many-requests":"Too many tries. Please wait a bit.","auth/network-request-failed":"No internet connection."}[c]||"Something went wrong. Please try again.");
+async function doAuth(){
+  const em=$("em").value.trim(),pw=$("pw").value;authEm=em;
+  if(!em||!pw){authMsg="Enter your email and password.";render();return}
+  try{
+    authMode=="in"?await FB.Au.signInWithEmailAndPassword(FB.auth,em,pw):await FB.Au.createUserWithEmailAndPassword(FB.auth,em,pw);
+    authMsg="";toast(authMode=="in"?"Logged in":"Account created");
+  }catch(e){authMsg=errMsg(e.code);render()}
+}
+async function doReset(){
+  const em=$("em").value.trim();authEm=em;
+  if(!em){authMsg="Enter your email first, then tap Forgot password.";render();return}
+  try{await FB.Au.sendPasswordResetEmail(FB.auth,em);authMsg="";toast("Reset link sent to your email")}catch(e){authMsg=errMsg(e.code);render()}
+}
+function profile(){
+  if(!FIREBASE_CONFIG.apiKey)return `<h1 class="page">Profile</h1><div class="empty g">Login is not set up yet.<br>Add your Firebase keys in <b>FIREBASE_CONFIG</b> to turn it on.</div>`;
+  if(user){const n=lib().length;return `<h1 class="page">Profile</h1><div class="g pf"><div class="av">${esc((user.email||"?")[0].toUpperCase())}</div><h3>${esc(user.email)}</h3><p>${n} comic${n==1?"":"s"} saved in your library</p><div class="btns" style="justify-content:center"><button class="btn" data-p="library">My Library</button><button class="btn s" data-logout>Log out</button></div></div>`}
+  return `<h1 class="page">Profile</h1><div class="g pf"><div class="chips" style="justify-content:center"><div class="chip ${authMode=="in"?"on":""}" data-am="in">Log in</div><div class="chip ${authMode=="up"?"on":""}" data-am="up">Sign up</div></div>
+  <input class="field" id="em" type="email" placeholder="Email" value="${esc(authEm)}" autocomplete="email">
+  <input class="field" id="pw" type="password" placeholder="Password (min 6 characters)" autocomplete="${authMode=="in"?"current-password":"new-password"}">
+  ${authMsg?`<p class="amsg">${esc(authMsg)}</p>`:""}
+  <button class="btn" style="width:100%" data-auth>${authMode=="in"?"Log in":"Create account"}</button>
+  ${authMode=="in"?`<p class="lnk" data-reset>Forgot password?</p>`:""}
+  <p class="sm">Log in to save your library and open it on any device.</p></div>`;
+}
+
+/* ===== Loads comics added from admin.html (comics.json) ===== */
+async function loadComics(){
+  try{
+    const r=await fetch("comics.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)return;
+    const j=await r.json();
+    if(!Array.isArray(j)||!j.length)return;
+    const ids=new Set(j.map(c=>c.id));
+    COMICS=[...COMICS.filter(c=>!c.demo&&!ids.has(c.id)),...j];
+    anim=true;render();
+    if(location.hash.length>1&&find(decodeURIComponent(location.hash.slice(1))))openComic(decodeURIComponent(location.hash.slice(1)));
+  }catch(e){}
+}
+let page="home",anim=true;
+function render(){
+  $("view").innerHTML={home,browse,library,profile}[page]();
+  const v=$("view");v.classList.remove("view-in");
+  if(anim){void v.offsetWidth;[...v.children].forEach((e,k)=>e.style.setProperty("--k",Math.min(k,7)));v.querySelectorAll(".card,.li").forEach((e,k)=>e.style.setProperty("--c",k%10));v.classList.add("view-in");anim=false}
+  $("nav").style.setProperty("--i",["home","browse","library","profile"].indexOf(page));
+  document.querySelectorAll("#nav div").forEach(d=>d.classList.toggle("a",d.dataset.p==page));
+  if(page=="home")startCar();else clearInterval(carT);
+}
+function go(p){page=p;anim=true;render();window.scrollTo(0,0)}
+
+function openComic(id,quiet){
+  const c=find(id);if(!c)return;
+  $("sheet").innerHTML=`<span class="close" id="x">×</span>
+  <div class="dh">${cover(c)}<div><h2>${esc(c.title)}</h2><div class="meta">${esc(c.type)} · ${esc(c.status)}<br>${esc(c.genres.join(", "))}</div>
+  <button class="btn ${has(c.id)?"on":""}" data-lib="${c.id}">${has(c.id)?"✓ In Library":"+ Add to Library"}</button></div></div>
+  <p class="desc">${esc(c.desc)}</p><div class="sec"><h3>Chapters</h3></div>
+  ${c.chapters.length?c.chapters.map((ch,k)=>`<div class="ch" data-read="${c.id}|${k}"><span>${esc(ch.n)}</span><small>Read →</small></div>`).reverse().join(""):`<div class="empty">No chapters yet.</div>`}`;
+  $("sheet").classList.toggle("quiet",!!quiet);$("sheet").querySelectorAll(".ch").forEach((e,k)=>e.style.setProperty("--c",k));
+  $("bg").classList.add("show");$("sheet").classList.add("show");
+  history.replaceState(null,"","#"+id);
+}
+function closeSheet(){$("bg").classList.remove("show");$("sheet").classList.remove("show");history.replaceState(null,"",location.pathname)}
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),1800)}
+function toggleLib(id){
+  let l=lib();
+  if(l.includes(id)){l=l.filter(x=>x!=id);toast("Removed from Library")}else{l.push(id);toast("Added to Library")}
+  saveLib(l);render();if($("sheet").classList.contains("show"))openComic(id,true);
+}
+
+
+/* ===== READER (full screen reading mode) ===== */
+let rd={id:null,i:0,open:false},lastY=0;
+function openReader(id,i){
+  const c=find(id),ch=c&&c.chapters[i];if(!ch)return;
+  const real=ch.pages&&ch.pages.length;
+  if(!real&&ch.link&&ch.link!="#"){window.open(ch.link,"_blank");return}
+  const el=$("rd");
+  const pages=real?ch.pages.map(u=>`<img loading="lazy" src="${esc(u)}" alt="">`).join(""):
+    Array.from({length:6},(_,k)=>`<div class="demo" style="--h:${(c.hue+k*25)%360}">Page ${k+1}<small>Demo page. Add real pages: chapters → pages:["image1.jpg","image2.jpg"]</small></div>`).join("");
+  const hasN=i<c.chapters.length-1,hasP=i>0;
+  el.innerHTML=`<div class="rprog" id="rprog"></div>
+  <div class="rtop g"><span class="rb" data-rclose>‹</span><div><b>${esc(c.title)}</b><small>${esc(ch.n)}</small></div></div>
+  <div class="rscroll" id="rsc">${pages}<div class="rend"><p>End of ${esc(ch.n)}</p>${hasN?`<button class="btn" data-rnav="1">Next Chapter ›</button>`:`<p>You are all caught up!</p>`}<button class="btn s" data-rclose>Back to comic</button></div></div>
+  <div class="rbot g"><button class="btn s" data-rnav="-1" style="visibility:${hasP?"visible":"hidden"}">‹ Prev</button><span>${i+1} / ${c.chapters.length}</span><button class="btn" data-rnav="1" style="visibility:${hasN?"visible":"hidden"}">Next ›</button></div>`;
+  el.classList.remove("hb");el.classList.add("show");document.body.style.overflow="hidden";
+  if(!rd.open){history.pushState({r:1},"");if(el.requestFullscreen){try{el.requestFullscreen().catch(()=>{})}catch(e){}}}
+  rd={id,i,open:true};lastY=0;
+  const sc=$("rsc");
+  sc.addEventListener("scroll",()=>{
+    const y=sc.scrollTop,m=sc.scrollHeight-sc.clientHeight;
+    $("rprog").style.width=(m>0?y/m*100:0)+"%";
+    if(y>lastY+12&&y>80)el.classList.add("hb");else if(y<lastY-12)el.classList.remove("hb");
+    lastY=y;
+  },{passive:true});
+  sc.addEventListener("click",e=>{if(!e.target.closest("button"))el.classList.toggle("hb")});
+}
+function closeReader(){
+  const el=$("rd");el.classList.remove("show");el.innerHTML="";document.body.style.overflow="";
+  if(document.fullscreenElement&&document.exitFullscreen){try{document.exitFullscreen()}catch(e){}}
+  rd.open=false;
+}
+window.addEventListener("popstate",()=>{if(rd.open)closeReader()});
+
+document.addEventListener("keydown",e=>{if(e.key=="Enter"&&e.target.id=="pw")doAuth()});
+document.addEventListener("click",e=>{
+  const t=e.target;
+  const lb=t.closest("[data-lib]");if(lb){e.stopPropagation();toggleLib(lb.dataset.lib);return}
+  if(t.closest("#x")||t.id=="bg"){closeSheet();return}
+  if(t.closest("[data-rclose]")){if(history.state&&history.state.r)history.back();else closeReader();return}
+  const rn=t.closest("[data-rnav]");if(rn){openReader(rd.id,rd.i+ +rn.dataset.rnav);return}
+  const rr=t.closest("[data-read]");if(rr){const[a,b]=rr.dataset.read.split("|");openReader(a,+b);return}
+  const am=t.closest("[data-am]");if(am){authEm=($("em")||{}).value||authEm;authMode=am.dataset.am;authMsg="";render();return}
+  if(t.closest("[data-auth]")){doAuth();return}
+  if(t.closest("[data-reset]")){doReset();return}
+  if(t.closest("[data-logout]")){try{localStorage.removeItem(LS)}catch(e){}FB.Au.signOut(FB.auth);toast("Logged out");return}
+  const g=t.closest("[data-g]");if(g){genre=g.dataset.g;anim=true;render();return}
+  const p=t.closest("[data-p]");if(p){go(p.dataset.p);return}
+  const c=t.closest("[data-id]");if(c){openComic(c.dataset.id)}
+});
+$("logo").onclick=()=>{query="";$("q").value="";go("home")};
+$("q").addEventListener("input",e=>{query=e.target.value;if(page!="browse")page="browse";render()});
+render();initAuth();loadComics();
+if(location.hash.length>1)openComic(decodeURIComponent(location.hash.slice(1)));
+</script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#04161c">
+<title>SkyComic Admin</title>
+<style>
+:root{--bg:#04161c;--gl:rgba(255,255,255,.07);--gl2:rgba(255,255,255,.11);--bd:rgba(150,255,240,.18);--tx:#e6fffb;--ac:#2dd4bf;--ac2:#04201f}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top,0px)) 14px 60px;min-height:100vh}
+.blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.6;z-index:0;pointer-events:none}
+.b1{width:280px;height:280px;top:-70px;left:-80px;background:#0d9488}.b2{width:260px;height:260px;bottom:-80px;right:-80px;background:#1d4ed8}
+.w{position:relative;z-index:1;max-width:560px;margin:0 auto}
+h1{font-size:24px;letter-spacing:-.5px;margin:6px 2px 4px}h1 b{color:var(--ac)}
+.sub{font-size:13px;opacity:.65;margin:0 2px 16px}
+.card{background:var(--gl);border:1px solid var(--bd);backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);box-shadow:inset 0 1px 0 rgba(200,255,250,.2),0 8px 30px rgba(0,0,0,.35);border-radius:24px;padding:18px;margin-bottom:16px}
+h2{font-size:17px;margin-bottom:12px}
+label{display:block;font-size:12px;font-weight:600;opacity:.7;margin:10px 2px 5px}
+input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;font-size:15px;color:var(--tx);background:var(--gl2);border:1px solid var(--bd);outline:none;font-family:inherit}
+select option{color:#000}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px var(--ac)}
+input[type=file]{padding:10px}
+textarea{min-height:80px;resize:vertical}
+.r{display:flex;gap:10px}.r>div{flex:1}
+button{width:100%;margin-top:14px;padding:13px;border:0;border-radius:99px;font-size:15px;font-weight:700;background:var(--ac);color:var(--ac2);font-family:inherit;cursor:pointer;transition:transform .3s,opacity .3s}
+button:active{transform:scale(.96)}button:disabled{opacity:.5}
+button.s{background:var(--gl2);color:var(--tx);border:1px solid var(--bd)}
+button.d{background:rgba(248,113,113,.2);color:#fca5a5;border:1px solid rgba(248,113,113,.4)}
+#log{font-size:13px;line-height:1.5;margin:0 2px 10px;min-height:20px}#log.err{color:#fca5a5}#log.ok{color:var(--ac)}
+.pb{height:6px;border-radius:9px;background:var(--gl2);overflow:hidden;margin:0 2px 16px}.pb div{height:100%;width:0;background:var(--ac);transition:width .3s}
+.hide{display:none}
+small{font-size:12px;opacity:.6;display:block;margin-top:8px;line-height:1.5}
+a{color:var(--ac)}
+.ck{display:flex;gap:10px;align-items:center;opacity:1;font-size:13px;margin-top:12px}.ck input{width:auto;accent-color:var(--ac)}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+<div class="w">
+  <h1>Sky<b>Comic</b> Admin</h1>
+  <p class="sub">Only the owner (with the secret token) can add or remove series.</p>
+  <div id="log"></div><div class="pb"><div id="bar"></div></div>
+
+  <div class="card" id="cn">
+    <h2>1. Connect</h2>
+    <label>GitHub token (kept only on this phone)</label>
+    <input id="tk" type="password" placeholder="github_pat_..." autocomplete="off">
+    <div class="r"><div><label>Repository</label><input id="rp"></div><div><label>Branch</label><input id="br"></div></div>
+    <button id="cb">Connect</button>
+    <small>Token = GitHub → Settings → Developer settings → Fine-grained token (Contents: Read and write, only for your site repo).</small>
+  </div>
+
+  <div id="main" class="hide">
+    <div class="card">
+      <h2>2. Add new series</h2>
+      <label>Title</label><input id="title" placeholder="Series name">
+      <div class="r"><div><label>Type</label><select id="type"><option>Manhwa</option><option>Manga</option><option>Manhua</option></select></div>
+      <div><label>Status</label><select id="status"><option>Ongoing</option><option>Completed</option><option>Hiatus</option></select></div></div>
+      <label>Genres (comma separated)</label><input id="gen" placeholder="Action, Fantasy, Romance">
+      <label>Description</label><textarea id="desc" placeholder="Short story summary"></textarea>
+      <label>Cover image</label><input id="cover" type="file" accept="image/*">
+      <button id="as">Add series</button>
+    </div>
+
+    <div class="card">
+      <h2>3. Add chapter</h2>
+      <label>Series</label><select id="ser"></select>
+      <label>Chapter name</label><input id="chn" placeholder="Chapter 1">
+      <label>Chapter pages (select all images)</label><input id="pages" type="file" accept="image/*" multiple>
+      <small>Pages are sorted by file name (01, 02, 03...). Large images are compressed automatically.</small>
+      <button id="ac">Upload chapter</button>
+    </div>
+
+    <div class="card">
+      <h2>4. Edit series info</h2>
+      <label>Series</label><select id="es"></select>
+      <label>Title</label><input id="etitle">
+      <div class="r"><div><label>Type</label><select id="etype"><option>Manhwa</option><option>Manga</option><option>Manhua</option></select></div>
+      <div><label>Status</label><select id="estatus"><option>Ongoing</option><option>Completed</option><option>Hiatus</option></select></div></div>
+      <label>Genres (comma separated)</label><input id="egen">
+      <label>Description</label><textarea id="edesc"></textarea>
+      <label>New cover (optional)</label><input id="ecover" type="file" accept="image/*">
+      <button id="sv">Save changes</button>
+    </div>
+
+    <div class="card">
+      <h2>5. Rename / reorder chapter</h2>
+      <label>Series</label><select id="mcs"></select>
+      <label>Chapter</label><select id="mch"></select>
+      <label>Chapter name</label><input id="mname">
+      <button id="mr">Save name</button>
+      <div class="r"><button class="s" id="mup">&uarr; Move earlier</button><button class="s" id="mdn">&darr; Move later</button></div>
+      <small>The last chapter in the order is the newest one and shows first on the site.</small>
+    </div>
+
+    <div class="card">
+      <label class="ck" style="margin-top:0"><input type="checkbox" id="unl"> Unlock delete options (protects against accidental removal)</label>
+    </div>
+
+    <div class="card">
+      <h2>6. Delete chapter</h2>
+      <label>Series</label><select id="dcs"></select>
+      <label>Chapter</label><select id="dch"></select>
+      <label class="ck"><input type="checkbox" id="dfiles" checked> Also delete its image files</label>
+      <button class="d" id="dc">Delete chapter</button>
+    </div>
+
+    <div class="card">
+      <h2>7. Remove series</h2>
+      <label>Series</label><select id="dser"></select>
+      <label class="ck"><input type="checkbox" id="dsfiles" checked> Also delete cover and all chapter images</label>
+      <button class="d" id="ds">Remove series</button>
+    </div>
+    <button class="s" id="lo">Log out of admin</button>
+  </div>
+</div>
+<script>
+const $=i=>document.getElementById(i);
+const L=k=>localStorage.getItem("sc_"+k)||"";
+const cfg={token:L("token"),repo:L("repo")||"skycomicx/skycomicx.github.io",branch:L("branch")||"main"};
+$("tk").value=cfg.token;$("rp").value=cfg.repo;$("br").value=cfg.branch;
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"item";
+const nat=(a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true});
+function log(m,t){const d=$("log");d.textContent=m;d.className=t||""}
+function prog(x){$("bar").style.width=x+"%"}
+function lock(){const on=!$("unl").checked;$("dc").disabled=on;$("ds").disabled=on}
+function busy(b){document.querySelectorAll("button").forEach(x=>x.disabled=b);if(!b)lock()}
+
+const api=(path,method="GET",body)=>fetch(`https://api.github.com/repos/${cfg.repo}/contents/${path}`+(method=="GET"?`?ref=${cfg.branch}&t=${Date.now()}`:""),{method,cache:"no-store",headers:{Authorization:"Bearer "+cfg.token,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+const errOf=async r=>{try{return (await r.json()).message}catch(e){return "Error "+r.status}};
+
+async function putFile(path,b64,msg){
+  let r=await api(path,"PUT",{message:msg,content:b64,branch:cfg.branch});
+  if(r.status==422){const g=await api(path);if(g.ok){const sha=(await g.json()).sha;r=await api(path,"PUT",{message:msg,content:b64,branch:cfg.branch,sha})}}
+  if(!r.ok)throw new Error(await errOf(r));
+}
+async function readJSON(){
+  const r=await api("comics.json");
+  if(r.status==404)return{list:[],sha:null};
+  if(!r.ok)throw new Error(await errOf(r));
+  const j=await r.json();
+  const t=new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g,"")),c=>c.charCodeAt(0)));
+  return{list:JSON.parse(t||"[]"),sha:j.sha};
+}
+async function writeJSON(list,sha,msg){
+  const b64=btoa(unescape(encodeURIComponent(JSON.stringify(list,null,1))));
+  const r=await api("comics.json","PUT",{message:msg,content:b64,branch:cfg.branch,...(sha?{sha}:{})});
+  if(!r.ok)throw new Error(await errOf(r));
+}
+const extOf=f=>(f.type.split("/")[1]||"jpg").replace("jpeg","jpg").replace("+xml","");
+async function prep(file){
+  try{
+    const bmp=await createImageBitmap(file);
+    if(file.size<500000&&bmp.width<=1200)return{blob:file,ext:extOf(file)};
+    const w=Math.min(bmp.width,1080),h=Math.round(bmp.height*w/bmp.width);
+    const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(bmp,0,0,w,h);
+    const b=await new Promise(res=>c.toBlob(res,"image/webp",.85));
+    if(b)return{blob:b,ext:"webp"};
+  }catch(e){}
+  return{blob:file,ext:extOf(file)};
+}
+const toB64=b=>new Promise(res=>{const f=new FileReader();f.onload=()=>res(f.result.split(",")[1]);f.readAsDataURL(b)});
+async function uploadImages(files,dir,label){
+  const out=[];
+  for(let i=0;i<files.length;i++){
+    log(`${label}: uploading image ${i+1} of ${files.length}...`);prog(i/files.length*100);
+    const{blob,ext}=await prep(files[i]);
+    const path=`${dir}/${String(i+1).padStart(3,"0")}.${ext}`;
+    await putFile(path,await toB64(blob),"Add "+path);out.push(path);
+  }
+  prog(100);return out;
+}
+let DB=[];
+const SEL=["ser","dser","es","dcs","mcs"];
+async function refresh(){
+  const{list}=await readJSON();DB=list;
+  const keep={};SEL.forEach(k=>keep[k]=$(k).value);const keepM=$("mch").value;
+  const opts=list.length?list.map(c=>`<option value="${c.id}">${c.title.replace(/</g,"&lt;")}</option>`).join(""):`<option value="">No series yet</option>`;
+  SEL.forEach(k=>{$(k).innerHTML=opts;if([...$(k).options].some(o=>o.value==keep[k]))$(k).value=keep[k]});
+  fillName();fillEdit();fillCh();fillMch();if([...$("mch").options].some(o=>o.value==keepM))$("mch").value=keepM;mchName();return list;
+}
+function fillName(){const s=DB.find(c=>c.id==$("ser").value);$("chn").value=s?"Chapter "+(s.chapters.length+1):""}
+function fillEdit(){
+  const s=DB.find(c=>c.id==$("es").value)||{};
+  $("etitle").value=s.title||"";$("etype").value=s.type||"Manhwa";$("estatus").value=s.status||"Ongoing";
+  $("egen").value=(s.genres||[]).join(", ");$("edesc").value=s.desc||"";
+}
+function fillCh(){
+  const s=DB.find(c=>c.id==$("dcs").value);
+  $("dch").innerHTML=s&&s.chapters.length?s.chapters.map((c,k)=>`<option value="${k}">${c.n.replace(/</g,"&lt;")}</option>`).join(""):`<option value="">No chapters</option>`;
+}
+function fillMch(){
+  const s=DB.find(c=>c.id==$("mcs").value);
+  $("mch").innerHTML=s&&s.chapters.length?s.chapters.map((c,k)=>`<option value="${k}">${c.n.replace(/</g,"&lt;")}</option>`).join(""):`<option value="">No chapters</option>`;
+  mchName();
+}
+function mchName(){const s=DB.find(c=>c.id==$("mcs").value),c=s&&s.chapters[+$("mch").value];$("mname").value=$("mch").value!==""&&c?c.n:""}
+$("mcs").onchange=fillMch;$("mch").onchange=mchName;$("unl").onchange=lock;
+$("ser").onchange=fillName;$("es").onchange=fillEdit;$("dcs").onchange=fillCh;
+async function delFiles(paths){
+  const ps=paths.filter(p=>p&&!/^https?:/.test(p));
+  for(let k=0;k<ps.length;k++){
+    log(`Deleting files ${k+1} of ${ps.length}...`);prog(k/ps.length*100);
+    const g=await api(ps[k]);if(!g.ok)continue;
+    await api(ps[k],"DELETE",{message:"Delete "+ps[k],sha:(await g.json()).sha,branch:cfg.branch});
+  }
+  prog(100);
+}
+
+async function run(fn,okMsg){
+  busy(true);prog(0);
+  try{await fn();log(okMsg+" The site updates in 1-2 minutes.","ok")}
+  catch(e){log("Failed: "+e.message,"err")}
+  busy(false);setTimeout(()=>prog(0),1500);
+}
+$("cb").onclick=async()=>{
+  cfg.token=$("tk").value.trim();cfg.repo=$("rp").value.trim();cfg.branch=$("br").value.trim()||"main";
+  if(!cfg.token){log("Paste your token first.","err");return}
+  busy(true);log("Connecting...");
+  try{await refresh();["token","repo","branch"].forEach(k=>localStorage.setItem("sc_"+k,cfg[k]));$("main").classList.remove("hide");$("cn").classList.add("hide");log("Connected.","ok")}
+  catch(e){log("Could not connect: "+e.message+" (check token, repo name and permissions)","err")}
+  busy(false);
+};
+$("lo").onclick=()=>{["token","repo","branch"].forEach(k=>localStorage.removeItem("sc_"+k));location.reload()};
+
+$("as").onclick=()=>run(async()=>{
+  const title=$("title").value.trim(),cover=$("cover").files[0];
+  if(!title||!cover)throw new Error("Enter a title and choose a cover image.");
+  const{list,sha}=await readJSON();
+  let id=slug(title);if(list.some(c=>c.id==id))id+="-"+Date.now().toString(36).slice(-3);
+  const[img]=await uploadImages([cover],`comics/${id}`,"Cover");
+  list.push({id,title,type:$("type").value,hue:Math.floor(Math.random()*360),img,genres:$("gen").value.split(",").map(x=>x.trim()).filter(Boolean),status:$("status").value,desc:$("desc").value.trim(),chapters:[]});
+  await writeJSON(list,sha,"Add series "+title);
+  ["title","gen","desc"].forEach(k=>$(k).value="");$("cover").value="";await refresh();
+},"Series added!");
+
+$("ac").onclick=()=>run(async()=>{
+  const id=$("ser").value,name=$("chn").value.trim(),files=[...$("pages").files].sort(nat);
+  if(!id||!name||!files.length)throw new Error("Choose a series, enter a chapter name and select the pages.");
+  const{list,sha}=await readJSON();const s=list.find(c=>c.id==id);
+  if(!s)throw new Error("Series not found.");
+  if(s.chapters.some(c=>c.n.toLowerCase()==name.toLowerCase()))throw new Error("This chapter name already exists.");
+  const pages=await uploadImages(files,`comics/${id}/${slug(name)}`,name);
+  s.chapters.push({n:name,pages});
+  await writeJSON(list,sha,`Add ${name} to ${s.title}`);
+  $("pages").value="";await refresh();
+},"Chapter uploaded!");
+
+$("sv").onclick=()=>run(async()=>{
+  const id=$("es").value,t=$("etitle").value.trim();
+  if(!id)throw new Error("No series selected.");if(!t)throw new Error("Title cannot be empty.");
+  const{list,sha}=await readJSON();const x=list.find(c=>c.id==id);if(!x)throw new Error("Series not found.");
+  x.title=t;x.type=$("etype").value;x.status=$("estatus").value;
+  x.genres=$("egen").value.split(",").map(v=>v.trim()).filter(Boolean);x.desc=$("edesc").value.trim();
+  const f=$("ecover").files[0];let old=null;
+  if(f){old=x.img;[x.img]=await uploadImages([f],`comics/${id}/cover-${Date.now().toString(36)}`,"Cover")}
+  await writeJSON(list,sha,"Edit "+t);
+  if(old)await delFiles([old]).catch(()=>{});
+  $("ecover").value="";await refresh();
+},"Series updated!");
+
+async function chEdit(fn,okMsg){
+  const id=$("mcs").value,v=$("mch").value;
+  if(!id||v==="")return log("Choose a series and a chapter first.","err");
+  run(async()=>{
+    const{list,sha}=await readJSON();const x=list.find(c=>c.id==id);
+    if(!x||!x.chapters[+v])throw new Error("Chapter not found.");
+    const to=fn(x,+v);
+    await writeJSON(list,sha,"Edit chapters of "+x.title);
+    await refresh();$("mch").value=to;mchName();
+  },okMsg);
+}
+$("mr").onclick=()=>chEdit((x,i)=>{
+  const nm=$("mname").value.trim();
+  if(!nm)throw new Error("Enter a chapter name.");
+  if(x.chapters.some((c,k)=>k!=i&&c.n.toLowerCase()==nm.toLowerCase()))throw new Error("Another chapter already has this name.");
+  x.chapters[i].n=nm;return i;
+},"Chapter renamed!");
+const mv=d=>chEdit((x,i)=>{
+  const j=i+d;if(j<0||j>=x.chapters.length)throw new Error("Cannot move further.");
+  [x.chapters[i],x.chapters[j]]=[x.chapters[j],x.chapters[i]];return j;
+},"Chapter order changed!");
+$("mup").onclick=()=>mv(-1);$("mdn").onclick=()=>mv(1);
+
+$("dc").onclick=()=>{
+  const id=$("dcs").value,v=$("dch").value;if(!id||v==="")return;
+  if(!confirm("Delete this chapter?"))return;
+  run(async()=>{
+    const{list,sha}=await readJSON();const x=list.find(c=>c.id==id),ch=x&&x.chapters[+v];
+    if(!ch)throw new Error("Chapter not found.");
+    x.chapters.splice(+v,1);
+    await writeJSON(list,sha,`Remove ${ch.n} from ${x.title}`);
+    if($("dfiles").checked)await delFiles(ch.pages||[]);
+    $("unl").checked=false;await refresh();
+  },"Chapter deleted!");
+};
+
+$("ds").onclick=()=>{
+  const id=$("dser").value;if(!id)return;
+  if(!confirm("Remove this series from the site?"))return;
+  run(async()=>{
+    const{list,sha}=await readJSON();const x=list.find(c=>c.id==id);
+    await writeJSON(list.filter(c=>c.id!=id),sha,"Remove series "+id);
+    if(x&&$("dsfiles").checked)await delFiles([x.img,...x.chapters.flatMap(c=>c.pages||[])]);
+    $("unl").checked=false;await refresh();
+  },"Series removed!");
+};
+lock();
+if(cfg.token)$("cb").click();
+</script>
+</body>
+</html>
