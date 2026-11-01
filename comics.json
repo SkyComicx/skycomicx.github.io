@@ -56,5 +56,16 @@
   "status": "Ongoing",
   "desc": "",
   "chapters": []
+ },
+ {
+  "id": "eleceed",
+  "title": "Eleceed",
+  "type": "Manhwa",
+  "hue": 136,
+  "img": "comics/eleceed/001.webp",
+  "genres": [],
+  "status": "Ongoing",
+  "desc": "",
+  "chapters": []
  }
 ]
