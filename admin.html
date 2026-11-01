@@ -6,6 +6,8 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#04161c">
 <title>SkyComic Admin</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{--bg:#04161c;--gl:rgba(255,255,255,.07);--gl2:rgba(255,255,255,.11);--bd:rgba(150,255,240,.18);--tx:#e6fffb;--ac:#2dd4bf;--ac2:#04201f}
 *{box-sizing:border-box;margin:0}
@@ -60,7 +62,7 @@ a{color:var(--ac)}
       <div><label>Status</label><select id="status"><option>Ongoing</option><option>Completed</option><option>Hiatus</option></select></div></div>
       <label>Genres (comma separated)</label><input id="gen" placeholder="Action, Fantasy, Romance">
       <label>Description</label><textarea id="desc" placeholder="Short story summary"></textarea>
-      <label>Cover image</label><input id="cover" type="file" accept="image/*">
+      <label>Cover image</label><input id="cover" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.bmp">
       <button id="as">Add series</button>
     </div>
 
@@ -68,8 +70,9 @@ a{color:var(--ac)}
       <h2>3. Add chapter</h2>
       <label>Series</label><select id="ser"></select>
       <label>Chapter name</label><input id="chn" placeholder="Chapter 1">
-      <label>Chapter pages (select all images)</label><input id="pages" type="file" accept="image/*" multiple>
-      <small>Pages are sorted by file name (01, 02, 03...). Large images are compressed automatically.</small>
+      <label>Chapter pages (images, PDF, ZIP, CBZ or EPUB)</label><input id="pages" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.bmp,.pdf,.zip,.cbz,.epub" multiple>
+      <label>Or paste image links (one per line, optional)</label><textarea id="urls" placeholder="https://example.com/1.jpg"></textarea>
+      <small>Supported: JPG, PNG, WEBP, GIF, AVIF, BMP, PDF, ZIP, CBZ, EPUB and image links. Images are sorted by file name and compressed automatically. Very tall webtoon strips are cut into smooth slices.</small>
       <button id="ac">Upload chapter</button>
     </div>
 
@@ -81,7 +84,7 @@ a{color:var(--ac)}
       <div><label>Status</label><select id="estatus"><option>Ongoing</option><option>Completed</option><option>Hiatus</option></select></div></div>
       <label>Genres (comma separated)</label><input id="egen">
       <label>Description</label><textarea id="edesc"></textarea>
-      <label>New cover (optional)</label><input id="ecover" type="file" accept="image/*">
+      <label>New cover (optional)</label><input id="ecover" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.bmp">
       <button id="sv">Save changes</button>
     </div>
 
@@ -150,25 +153,67 @@ async function writeJSON(list,sha,msg){
   if(!r.ok)throw new Error(await errOf(r));
 }
 const extOf=f=>(f.type.split("/")[1]||"jpg").replace("jpeg","jpg").replace("+xml","");
-async function prep(file){
-  try{
-    const bmp=await createImageBitmap(file);
-    if(file.size<500000&&bmp.width<=1200)return{blob:file,ext:extOf(file)};
-    const w=Math.min(bmp.width,1080),h=Math.round(bmp.height*w/bmp.width);
-    const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(bmp,0,0,w,h);
-    const b=await new Promise(res=>c.toBlob(res,"image/webp",.85));
-    if(b)return{blob:b,ext:"webp"};
-  }catch(e){}
-  return{blob:file,ext:extOf(file)};
-}
 const toB64=b=>new Promise(res=>{const f=new FileReader();f.onload=()=>res(f.result.split(",")[1]);f.readAsDataURL(b)});
-async function uploadImages(files,dir,label){
+async function expandPdf(file,label){
+  if(typeof pdfjsLib=="undefined")throw new Error("PDF tool could not load. Check your internet and reload this page.");
+  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
   const out=[];
+  for(let n=1;n<=pdf.numPages;n++){
+    log(`${label}: reading PDF page ${n} of ${pdf.numPages}...`);prog(n/pdf.numPages*100);
+    const page=await pdf.getPage(n),v1=page.getViewport({scale:1}),vp=page.getViewport({scale:Math.min(1080/v1.width,3)});
+    const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+    await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+    let ext="webp",b=await new Promise(r=>c.toBlob(r,"image/webp",.85));
+    if(!b){ext="jpg";b=await new Promise(r=>c.toBlob(r,"image/jpeg",.85))}
+    out.push({blob:b,ext,ready:true});c.width=c.height=0;page.cleanup();
+  }
+  return out;
+}
+const isPdf=f=>f.type=="application/pdf"||/\.pdf$/i.test(f.name);
+const isZip=f=>/\.(zip|cbz|epub)$/i.test(f.name)||/zip|epub/.test(f.type);
+const isOk=f=>/\.(jpe?g|png|webp|gif|avif|bmp|pdf|zip|cbz|epub)$/i.test(f.name);
+const MIME={jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",gif:"image/gif",avif:"image/avif",bmp:"image/bmp"};
+async function expandZip(file,label){
+  if(typeof JSZip=="undefined")throw new Error("ZIP tool could not load. Check your internet and reload this page.");
+  log(label+": opening "+file.name+"...");
+  const z=await JSZip.loadAsync(file);
+  const names=Object.keys(z.files).filter(n=>!z.files[n].dir&&!/(^|\/)(__MACOSX|\.)/.test(n)&&/\.(jpe?g|png|webp|gif|avif|bmp)$/i.test(n)).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  if(!names.length)throw new Error("No images found inside "+file.name);
+  const out=[];
+  for(let k=0;k<names.length;k++){
+    log(`${label}: reading ${file.name} (${k+1} of ${names.length})...`);prog((k+1)/names.length*100);
+    const b=await z.files[names[k]].async("blob"),ext=names[k].split(".").pop().toLowerCase();
+    out.push(new File([b],names[k].split("/").pop(),{type:MIME[ext]||"image/jpeg"}));
+  }
+  return out;
+}
+async function prepMany(file){
+  if(file.type=="image/gif")return[{blob:file,ext:"gif"}];
+  let bmp;
+  try{bmp=await createImageBitmap(file)}catch(e){return[{blob:file,ext:extOf(file)}]}
+  if(file.size<500000&&bmp.width<=1200&&bmp.height<=6000)return[{blob:file,ext:extOf(file)}];
+  const w=Math.min(bmp.width,1080),h=Math.round(bmp.height*w/bmp.width),sl=h>6000?4000:h;
+  const out=[];
+  for(let y=0;y<h;y+=sl){
+    const ch=Math.min(sl,h-y),c=document.createElement("canvas");c.width=w;c.height=ch;
+    c.getContext("2d").drawImage(bmp,0,y*bmp.height/h,bmp.width,ch*bmp.height/h,0,0,w,ch);
+    let ext="webp",b=await new Promise(r=>c.toBlob(r,"image/webp",.85));
+    if(!b){ext="jpg";b=await new Promise(r=>c.toBlob(r,"image/jpeg",.85))}
+    out.push({blob:b,ext});c.width=c.height=0;
+  }
+  return out;
+}
+async function uploadImages(files,dir,label,one){
+  const out=[];let n=0;
   for(let i=0;i<files.length;i++){
-    log(`${label}: uploading image ${i+1} of ${files.length}...`);prog(i/files.length*100);
-    const{blob,ext}=await prep(files[i]);
-    const path=`${dir}/${String(i+1).padStart(3,"0")}.${ext}`;
-    await putFile(path,await toB64(blob),"Add "+path);out.push(path);
+    log(`${label}: uploading file ${i+1} of ${files.length}...`);prog(i/files.length*100);
+    let parts=files[i].ready?[files[i]]:await prepMany(files[i]);
+    if(one)parts=parts.slice(0,1);
+    for(const{blob,ext}of parts){
+      n++;const path=`${dir}/${String(n).padStart(3,"0")}.${ext}`;
+      await putFile(path,await toB64(blob),"Add "+path);out.push(path);
+    }
   }
   prog(100);return out;
 }
@@ -230,7 +275,7 @@ $("as").onclick=()=>run(async()=>{
   if(!title||!cover)throw new Error("Enter a title and choose a cover image.");
   const{list,sha}=await readJSON();
   let id=slug(title);if(list.some(c=>c.id==id))id+="-"+Date.now().toString(36).slice(-3);
-  const[img]=await uploadImages([cover],`comics/${id}`,"Cover");
+  const[img]=await uploadImages([cover],`comics/${id}`,"Cover",true);
   list.push({id,title,type:$("type").value,hue:Math.floor(Math.random()*360),img,genres:$("gen").value.split(",").map(x=>x.trim()).filter(Boolean),status:$("status").value,desc:$("desc").value.trim(),chapters:[]});
   await writeJSON(list,sha,"Add series "+title);
   ["title","gen","desc"].forEach(k=>$(k).value="");$("cover").value="";await refresh();
@@ -238,14 +283,22 @@ $("as").onclick=()=>run(async()=>{
 
 $("ac").onclick=()=>run(async()=>{
   const id=$("ser").value,name=$("chn").value.trim(),files=[...$("pages").files].sort(nat);
-  if(!id||!name||!files.length)throw new Error("Choose a series, enter a chapter name and select the pages.");
+  const urls=$("urls").value.split("\n").map(x=>x.trim()).filter(x=>/^https?:\/\//i.test(x));
+  if(!id||!name||(!files.length&&!urls.length))throw new Error("Choose a series, enter a chapter name and add pages (files or links).");
+  const bad=files.find(f=>!isOk(f));if(bad)throw new Error(bad.name+" is not supported.");
   const{list,sha}=await readJSON();const s=list.find(c=>c.id==id);
   if(!s)throw new Error("Series not found.");
   if(s.chapters.some(c=>c.n.toLowerCase()==name.toLowerCase()))throw new Error("This chapter name already exists.");
-  const pages=await uploadImages(files,`comics/${id}/${slug(name)}`,name);
-  s.chapters.push({n:name,pages});
+  const items=[];
+  for(const f of files){
+    if(isPdf(f))items.push(...await expandPdf(f,name));
+    else if(isZip(f))items.push(...await expandZip(f,name));
+    else items.push(f);
+  }
+  const pages=items.length?await uploadImages(items,`comics/${id}/${slug(name)}`,name):[];
+  s.chapters.push({n:name,pages:[...pages,...urls]});
   await writeJSON(list,sha,`Add ${name} to ${s.title}`);
-  $("pages").value="";await refresh();
+  $("pages").value="";$("urls").value="";await refresh();
 },"Chapter uploaded!");
 
 $("sv").onclick=()=>run(async()=>{
@@ -255,60 +308,67 @@ $("sv").onclick=()=>run(async()=>{
   x.title=t;x.type=$("etype").value;x.status=$("estatus").value;
   x.genres=$("egen").value.split(",").map(v=>v.trim()).filter(Boolean);x.desc=$("edesc").value.trim();
   const f=$("ecover").files[0];let old=null;
-  if(f){old=x.img;[x.img]=await uploadImages([f],`comics/${id}/cover-${Date.now().toString(36)}`,"Cover")}
+  if(f){old=x.img;[x.img]=await uploadImages([f],`comics/${id}/cover-${Date.now().toString(36)}`,"Cover",true)}
   await writeJSON(list,sha,"Edit "+t);
   if(old)await delFiles([old]).catch(()=>{});
   $("ecover").value="";await refresh();
 },"Series updated!");
 
-async function chEdit(fn,okMsg){
+let SELK=null;
+function chEdit(fn,okMsg){
   const id=$("mcs").value,v=$("mch").value;
   if(!id||v==="")return log("Choose a series and a chapter first.","err");
   run(async()=>{
     const{list,sha}=await readJSON();const x=list.find(c=>c.id==id);
     if(!x||!x.chapters[+v])throw new Error("Chapter not found.");
-    const to=fn(x,+v);
-    await writeJSON(list,sha,"Edit chapters of "+x.title);
-    await refresh();$("mch").value=to;mchName();
+    SELK=null;await fn(x,+v);
+    await writeJSON(list,sha,"Edit chapters in "+x.title);
+    await refresh();
+    if(SELK!==null){$("mch").value=String(SELK);mchName()}
   },okMsg);
 }
-$("mr").onclick=()=>chEdit((x,i)=>{
-  const nm=$("mname").value.trim();
-  if(!nm)throw new Error("Enter a chapter name.");
-  if(x.chapters.some((c,k)=>k!=i&&c.n.toLowerCase()==nm.toLowerCase()))throw new Error("Another chapter already has this name.");
-  x.chapters[i].n=nm;return i;
+$("mr").onclick=()=>chEdit((x,k)=>{
+  const n=$("mname").value.trim();
+  if(!n)throw new Error("Chapter name cannot be empty.");
+  if(x.chapters.some((c,i)=>i!=k&&c.n.toLowerCase()==n.toLowerCase()))throw new Error("This chapter name already exists.");
+  x.chapters[k].n=n;SELK=k;
 },"Chapter renamed!");
-const mv=d=>chEdit((x,i)=>{
-  const j=i+d;if(j<0||j>=x.chapters.length)throw new Error("Cannot move further.");
-  [x.chapters[i],x.chapters[j]]=[x.chapters[j],x.chapters[i]];return j;
-},"Chapter order changed!");
-$("mup").onclick=()=>mv(-1);$("mdn").onclick=()=>mv(1);
+$("mup").onclick=()=>chEdit((x,k)=>{
+  if(k==0)throw new Error("Already the first chapter.");
+  [x.chapters[k-1],x.chapters[k]]=[x.chapters[k],x.chapters[k-1]];SELK=k-1;
+},"Chapter moved earlier!");
+$("mdn").onclick=()=>chEdit((x,k)=>{
+  if(k>=x.chapters.length-1)throw new Error("Already the last chapter.");
+  [x.chapters[k+1],x.chapters[k]]=[x.chapters[k],x.chapters[k+1]];SELK=k+1;
+},"Chapter moved later!");
 
 $("dc").onclick=()=>{
-  const id=$("dcs").value,v=$("dch").value;if(!id||v==="")return;
-  if(!confirm("Delete this chapter?"))return;
-  run(async()=>{
-    const{list,sha}=await readJSON();const x=list.find(c=>c.id==id),ch=x&&x.chapters[+v];
-    if(!ch)throw new Error("Chapter not found.");
-    x.chapters.splice(+v,1);
-    await writeJSON(list,sha,`Remove ${ch.n} from ${x.title}`);
-    if($("dfiles").checked)await delFiles(ch.pages||[]);
-    $("unl").checked=false;await refresh();
-  },"Chapter deleted!");
-};
-
-$("ds").onclick=()=>{
-  const id=$("dser").value;if(!id)return;
-  if(!confirm("Remove this series from the site?"))return;
+  const id=$("dcs").value,v=$("dch").value;
+  if(!id||v==="")return log("Choose a series and a chapter first.","err");
+  if(!confirm("Delete this chapter? This cannot be undone."))return;
   run(async()=>{
     const{list,sha}=await readJSON();const x=list.find(c=>c.id==id);
-    await writeJSON(list.filter(c=>c.id!=id),sha,"Remove series "+id);
-    if(x&&$("dsfiles").checked)await delFiles([x.img,...x.chapters.flatMap(c=>c.pages||[])]);
-    $("unl").checked=false;await refresh();
+    if(!x||!x.chapters[+v])throw new Error("Chapter not found.");
+    const [ch]=x.chapters.splice(+v,1);
+    await writeJSON(list,sha,`Delete ${ch.n} from ${x.title}`);
+    if($("dfiles").checked)await delFiles(ch.pages||[]);
+    await refresh();
+  },"Chapter deleted!");
+};
+$("ds").onclick=()=>{
+  const id=$("dser").value;
+  if(!id)return log("Choose a series first.","err");
+  if(!confirm("Remove this whole series? This cannot be undone."))return;
+  run(async()=>{
+    const{list,sha}=await readJSON();const i=list.findIndex(c=>c.id==id);
+    if(i<0)throw new Error("Series not found.");
+    const [x]=list.splice(i,1);
+    await writeJSON(list,sha,"Remove series "+x.title);
+    if($("dsfiles").checked)await delFiles([x.img,...x.chapters.flatMap(c=>c.pages||[])]);
+    await refresh();
   },"Series removed!");
 };
 lock();
-if(cfg.token)$("cb").click();
 </script>
 </body>
 </html>
