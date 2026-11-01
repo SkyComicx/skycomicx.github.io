@@ -45,5 +45,16 @@
   "status": "Ongoing",
   "desc": "",
   "chapters": []
+ },
+ {
+  "id": "lookism",
+  "title": "Lookism",
+  "type": "Manhwa",
+  "hue": 210,
+  "img": "comics/lookism/001.webp",
+  "genres": [],
+  "status": "Ongoing",
+  "desc": "",
+  "chapters": []
  }
 ]
