@@ -164,14 +164,14 @@ html{scroll-behavior:smooth}
    genres: list | status | desc: description
    chapters: [{n:"Chapter 1", pages:["img1.jpg","img2.jpg"]}]  (pages = chapter images in order)
 ============================================================ */
-const COMICS=[
- {id:"solo-leveling-ragnarok",title:"Solo Leveling: Ragnarok",type:"Manhwa",hue:265,img:"",genres:["Action","Fantasy"],status:"Ongoing",desc:"The story continues after the Monarchs' war, as a new threat rises and a new hero must face it.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"},{n:"Chapter 3",link:"#"}]},
- {id:"shadow-slave",title:"Shadow Slave",type:"Manhwa",hue:250,img:"",genres:["Action","Fantasy","Adventure"],status:"Ongoing",desc:"Sunny enters a nightmare world where survival means taking on shadows and gods alike.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"}]},
- {id:"teto-x-egen",title:"Teto x Egen",type:"Manhwa",hue:330,img:"",genres:["Romance","Comedy"],status:"Ongoing",desc:"A sweet and funny romance between two very different people.",chapters:[{n:"Chapter 1",link:"#"}]},
- {id:"eleceed",title:"Eleceed",type:"Manhwa",hue:210,img:"",genres:["Action","Comedy","Fantasy"],status:"Ongoing",desc:"A kind-hearted boy with lightning speed teams up with a cat who is secretly a powerful awakened.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"}]},
- {id:"tower-of-god",title:"Tower of God",type:"Manhwa",hue:190,img:"",genres:["Adventure","Fantasy","Mystery"],status:"Ongoing",desc:"Climb the Tower and everything you desire will be yours.",chapters:[{n:"Chapter 1",link:"#"}]},
- {id:"omniscient-reader",title:"Omniscient Reader",type:"Manhwa",hue:20,img:"",genres:["Action","Fantasy","Drama"],status:"Ongoing",desc:"The only reader of a web novel finds the story turning real, and he knows how it ends.",chapters:[{n:"Chapter 1",link:"#"}]},
- {id:"lookism",title:"Lookism",type:"Manhwa",hue:150,img:"",genres:["Drama","Action","Slice of Life"],status:"Ongoing",desc:"A bullied teen wakes up in a second, perfect body and lives two lives.",chapters:[{n:"Chapter 1",link:"#"}]}
+let COMICS=[
+ {demo:true,id:"solo-leveling-ragnarok",title:"Solo Leveling: Ragnarok",type:"Manhwa",hue:265,img:"",genres:["Action","Fantasy"],status:"Ongoing",desc:"The story continues after the Monarchs' war, as a new threat rises and a new hero must face it.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"},{n:"Chapter 3",link:"#"}]},
+ {demo:true,id:"shadow-slave",title:"Shadow Slave",type:"Manhwa",hue:250,img:"",genres:["Action","Fantasy","Adventure"],status:"Ongoing",desc:"Sunny enters a nightmare world where survival means taking on shadows and gods alike.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"}]},
+ {demo:true,id:"teto-x-egen",title:"Teto x Egen",type:"Manhwa",hue:330,img:"",genres:["Romance","Comedy"],status:"Ongoing",desc:"A sweet and funny romance between two very different people.",chapters:[{n:"Chapter 1",link:"#"}]},
+ {demo:true,id:"eleceed",title:"Eleceed",type:"Manhwa",hue:210,img:"",genres:["Action","Comedy","Fantasy"],status:"Ongoing",desc:"A kind-hearted boy with lightning speed teams up with a cat who is secretly a powerful awakened.",chapters:[{n:"Chapter 1",link:"#"},{n:"Chapter 2",link:"#"}]},
+ {demo:true,id:"tower-of-god",title:"Tower of God",type:"Manhwa",hue:190,img:"",genres:["Adventure","Fantasy","Mystery"],status:"Ongoing",desc:"Climb the Tower and everything you desire will be yours.",chapters:[{n:"Chapter 1",link:"#"}]},
+ {demo:true,id:"omniscient-reader",title:"Omniscient Reader",type:"Manhwa",hue:20,img:"",genres:["Action","Fantasy","Drama"],status:"Ongoing",desc:"The only reader of a web novel finds the story turning real, and he knows how it ends.",chapters:[{n:"Chapter 1",link:"#"}]},
+ {demo:true,id:"lookism",title:"Lookism",type:"Manhwa",hue:150,img:"",genres:["Drama","Action","Slice of Life"],status:"Ongoing",desc:"A bullied teen wakes up in a second, perfect body and lives two lives.",chapters:[{n:"Chapter 1",link:"#"}]}
 ];
 /* ========================================================== */
 /* ============ LOGIN SETUP (Firebase) ============
@@ -196,6 +196,7 @@ const last=c=>c.chapters.length?c.chapters[c.chapters.length-1].n:"No chapters";
 const card=c=>`<div class="card" data-id="${c.id}">${cover(c,c.type)}<p>${esc(c.title)}</p><small>${esc(last(c))}</small></div>`;
 
 function home(){
+  if(!COMICS.length)return `<div class="empty g">No comics yet. Check back soon!</div>`;
   const fe=[...COMICS].reverse().slice(0,8);
   const slide=h=>`<div class="hero g" data-id="${h.id}"><div class="cv" style="--h:${h.hue};${h.img?`background-image:url('${esc(h.img)}')`:""}"></div>
   <div class="info g"><h2>${esc(h.title)}</h2><p>${esc(h.genres.join(" · "))} · ${esc(h.status)}</p>
@@ -280,6 +281,20 @@ function profile(){
   ${authMode=="in"?`<p class="lnk" data-reset>Forgot password?</p>`:""}
   <p class="sm">Log in to save your library and open it on any device.</p></div>`;
 }
+
+/* ===== Loads comics added from admin.html (comics.json) ===== */
+async function loadComics(){
+  try{
+    const r=await fetch("comics.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)return;
+    const j=await r.json();
+    if(!Array.isArray(j)||!j.length)return;
+    const ids=new Set(j.map(c=>c.id));
+    COMICS=[...COMICS.filter(c=>!c.demo&&!ids.has(c.id)),...j];
+    anim=true;render();
+    if(location.hash.length>1&&find(decodeURIComponent(location.hash.slice(1))))openComic(decodeURIComponent(location.hash.slice(1)));
+  }catch(e){}
+}
 let page="home",anim=true;
 function render(){
   $("view").innerHTML={home,browse,library,profile}[page]();
@@ -362,7 +377,7 @@ document.addEventListener("click",e=>{
 });
 $("logo").onclick=()=>{query="";$("q").value="";go("home")};
 $("q").addEventListener("input",e=>{query=e.target.value;if(page!="browse")page="browse";render()});
-render();initAuth();
+render();initAuth();loadComics();
 if(location.hash.length>1)openComic(decodeURIComponent(location.hash.slice(1)));
 </script>
 </body>
