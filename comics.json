@@ -34,5 +34,16 @@
     ]
    }
   ]
+ },
+ {
+  "id": "shadow-slave",
+  "title": "Shadow Slave",
+  "type": "Manhwa",
+  "hue": 29,
+  "img": "comics/shadow-slave/001.webp",
+  "genres": [],
+  "status": "Ongoing",
+  "desc": "",
+  "chapters": []
  }
 ]
